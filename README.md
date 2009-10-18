@@ -19,6 +19,10 @@ in the web.xml descriptor file.
             <param-name>gzip</param-name>
             <param-value>true</param-value>
         </init-param>
+        <init-param>
+            <param-name>compress</param-name>
+            <param-value>true</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     
@@ -26,4 +30,3 @@ in the web.xml descriptor file.
         <servlet-name>lesscss</servlet-name>
         <url-pattern>*.css</url-pattern>
     </servlet-mapping>
-    
