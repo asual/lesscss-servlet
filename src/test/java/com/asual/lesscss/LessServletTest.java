@@ -20,8 +20,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mortbay.jetty.testing.HttpTester;
 import org.mortbay.jetty.testing.ServletTester;
@@ -31,31 +31,32 @@ import org.mortbay.jetty.testing.ServletTester;
  */
 public class LessServletTest  {
 
-	private ServletTester tester;
+    private static ServletTester tester;
  
-	@Before
-	public void before() throws Exception {
-		tester = new ServletTester();
-		tester.setClassLoader(getClass().getClassLoader());
-		tester.setContextPath("/");
-		tester.addServlet(LessServlet.class, "*.css");
-		tester.start();
-	}
+    @BeforeClass
+    public static void before() throws Exception {
+        tester = new ServletTester();
+        tester.setClassLoader(LessServletTest.class.getClassLoader());
+        tester.setContextPath("/");
+        tester.addServlet(LessServlet.class, "*.css");
+        tester.start();
+    }
   
-	@Test
-	public void test() throws IOException, Exception {
-	    HttpTester request = new HttpTester();
+    @Test
+    public void test() throws IOException, Exception {
+        HttpTester request = new HttpTester();
         request.setMethod("GET");
         request.setHeader("Host", "tester");
         request.setVersion("HTTP/1.1");
-	    request.setURI("/test.css");
-	    HttpTester response = new HttpTester();
-		response.parse(tester.getResponses(request.generate()));
-		assertEquals("body { color: #f0f0f0; }", response.getContent());
-	}
-	
-    @After
-    public void after() throws Exception {
+        request.setURI("/test.css");
+        HttpTester response = new HttpTester();
+        response.parse(tester.getResponses(request.generate()));
+        assertEquals("body { color: #f0f0f0; }", response.getContent());
+    }
+    
+    @AfterClass
+    public static void after() throws Exception {
         tester.stop();
     }
+    
 }
