@@ -65,11 +65,11 @@ public class ScriptResource extends Resource {
         JavaScriptCompressor compressor = new JavaScriptCompressor(in, new ErrorReporter() {
             public void warning(String message, String sourceName,
                     int line, String lineSource, int lineOffset) {
-                logger.warn(line < 0 ? message : line + ':' + lineOffset + ':' + message);
+                logger.error("message: " + message + (lineSource != null ? ", line: " + line + ", column: " + lineOffset + ", source: " + lineSource : ""));
             }
             public void error(String message, String sourceName,
                     int line, String lineSource, int lineOffset) {
-                logger.warn(line < 0 ? message : line + ':' + lineOffset + ':' + message);
+                logger.error("message: " + message + (lineSource != null ? ", line: " + line + ", column: " + lineOffset + ", source: " + lineSource : ""));
             }
             public EvaluatorException runtimeError(String message, String sourceName,
                     int line, String lineSource, int lineOffset) {
