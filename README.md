@@ -1,19 +1,17 @@
 LESS Servlet
 ============
 
-LESS Servlet is a Maven 2 artifact that enables the power of LESS in 
-Java based web applications. In addition it provides optimized access
-to static classpath resources and compresses the CSS and JavaScript 
-output.
+LESS Servlet enables optimized runtime processing of LESS resources. It can be used with 
+any static file or classpath resource and offers support for gzip and the YUI Compressor.
 
 Usage
 -----
 
-The following sample demonstrates how the Servlet can be configured 
+The following sample demonstrates how the two provided servlets can be configured 
 in the web.xml descriptor file.
 
     <servlet>
-        <servlet-name>lesscss</servlet-name>
+        <servlet-name>less</servlet-name>
         <servlet-class>com.asual.lesscss.LessServlet</servlet-class>
         <init-param>
             <param-name>gzip</param-name>
@@ -26,7 +24,23 @@ in the web.xml descriptor file.
         <load-on-startup>1</load-on-startup>
     </servlet>
     
+    <servlet>
+        <servlet-name>resource</servlet-name>
+        <servlet-class>com.asual.lesscss.ResourceServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+        
     <servlet-mapping>
-        <servlet-name>lesscss</servlet-name>
+        <servlet-name>less</servlet-name>
         <url-pattern>*.css</url-pattern>
     </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>less</servlet-name>
+        <url-pattern>*.js</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>resource</servlet-name>
+        <url-pattern>*.jpg</url-pattern>
+    </servlet-mapping>    
