@@ -54,7 +54,7 @@ public class StyleResource extends Resource {
         Reader in = new InputStreamReader(
                 new ByteArrayInputStream(
                         (new String(content))
-                            .replaceFirst("/\\*", "/*!")
+                            .replaceFirst("^/\\*", "/*!")
                             .getBytes(charset)), 
                             charset);
         Writer out = new OutputStreamWriter(baos, charset);
