@@ -16,7 +16,6 @@
 
 package com.asual.lesscss;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,7 +23,6 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -46,7 +44,6 @@ public class ResourceServlet extends HttpServlet {
     protected int milliseconds = 1000;
     protected String charset = "UTF-8";
     protected boolean compress = false;
-    protected boolean gzip = false;
     protected Map<String, Resource> resources;
     protected Map<String, String> mimeTypes = new HashMap<String, String>();
     {
@@ -66,9 +63,6 @@ public class ResourceServlet extends HttpServlet {
             }
             if (getInitParameter("compress") != null) {
                 compress = Boolean.valueOf(getInitParameter("compress"));
-            }
-            if (getInitParameter("gzip") != null) {
-                gzip = Boolean.valueOf(getInitParameter("gzip"));
             }
         }
     	resources = new HashMap<String, Resource>();
@@ -114,8 +108,8 @@ public class ResourceServlet extends HttpServlet {
     	return resources.get(path);
     }
     
-    public void service(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+    public void service(HttpServletRequest request, HttpServletResponse response) 
+        throws IOException, MalformedURLException, ResourceNotFoundException, ServletException {
 
         URL url = getUrl(request.getRequestURI());
         File file = getFile(request.getRequestURI());
@@ -155,34 +149,15 @@ public class ResourceServlet extends HttpServlet {
             response.setDateHeader("Expires", new Date().getTime() + maxAge*milliseconds);
             response.addDateHeader("Cache-control: max-age=", maxAge);
             response.addDateHeader("Last-Modified", lastModified);
-            
-            boolean shouldGzip = false;
-            String encoding = request.getHeader("Accept-Encoding");
-            if (encoding != null) {
-                encoding = encoding.replaceAll("\\s+", "").toLowerCase();
-                shouldGzip = encoding.indexOf("gzip") != -1 || request.getHeader("---------------") != null;
-                encoding = encoding.indexOf("x-gzip") != -1 ? "x-gzip" : "gzip";
-            }
-            
-            if (gzip && shouldGzip) {
-                response.setHeader("Content-Encoding", encoding);
-                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                GZIPOutputStream gz = new GZIPOutputStream(byteStream);
-                gz.write(content);
-                gz.finish();
-                byte[] bytes = byteStream.toByteArray();
-                response.setContentLength(bytes.length);
-                response.getOutputStream().write(bytes);
-            } else {
-                response.setContentLength(content.length);
-                response.getOutputStream().write(content);
-            }
+            response.setContentLength(content.length);
+            response.getOutputStream().write(content);
             response.getOutputStream().flush();
             response.getOutputStream().close();
             
         } else {
+            
             logger.error("Error processing: " + request.getRequestURI());
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            throw new ResourceNotFoundException("Error processing: " + request.getRequestURI());
         }
     }
     
