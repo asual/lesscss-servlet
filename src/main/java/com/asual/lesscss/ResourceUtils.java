@@ -16,11 +16,9 @@
 
 package com.asual.lesscss;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -37,15 +35,16 @@ public class ResourceUtils {
     public static byte[] readUrl(URL source) throws IOException {
         
         URLConnection urlc = source.openConnection();
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        StringBuffer sb = new StringBuffer(1024);
         try {
-            InputStream input = urlc.getInputStream();
+            UnicodeReader input = new UnicodeReader(urlc.getInputStream(), null);
             try {
-                byte[] buffer = new byte[1024];
-                int bytesRead = -1;
-                while ((bytesRead = input.read(buffer)) != -1) {
-                    byteStream.write(buffer, 0, bytesRead);
+                char[] cbuf = new char[32];
+                int r;
+                while ((r = input.read(cbuf, 0, 32)) != -1) {
+                    sb.append(cbuf, 0, r);
                 }
+                return sb.toString().getBytes(input.getEncoding());
             } finally {
                 input.close();
             }
@@ -53,20 +52,20 @@ public class ResourceUtils {
             logger.error("Can't read '" + source.getFile() + "'.");
             throw e;
         }
-        return byteStream.toByteArray();        
     }
     
     public static byte[] readFile(File source) throws IOException {
         
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        StringBuffer sb = new StringBuffer(1024);
         try {
-            FileInputStream input = new FileInputStream(source);
+            UnicodeReader input = new UnicodeReader(new FileInputStream(source), null);
             try {
-                byte[] buffer = new byte[1024];
-                int bytesRead = -1;
-                while ((bytesRead = input.read(buffer)) != -1) {
-                    byteStream.write(buffer, 0, bytesRead);
+                char[] cbuf = new char[32];
+                int r;
+                while ((r = input.read(cbuf, 0, 32)) != -1) {
+                    sb.append(cbuf, 0, r);
                 }
+                return sb.toString().getBytes(input.getEncoding());
             } finally {
                 input.close();
             }
@@ -74,7 +73,5 @@ public class ResourceUtils {
             logger.error("Can't read '" + source.getAbsolutePath() + "'.");
             throw e;
         }
-        return byteStream.toByteArray();
-    }
-    
+    }    
 }
