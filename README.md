@@ -2,7 +2,7 @@ LESS Servlet
 ============
 
 LESS Servlet enables optimized runtime processing of LESS resources. It can be used with 
-any static file or classpath resource and offers support for gzip and the YUI Compressor.
+any static file or classpath resource and performs minification using the YUI Compressor.
 
 Usage
 -----
@@ -13,10 +13,6 @@ in the web.xml descriptor file.
     <servlet>
         <servlet-name>less</servlet-name>
         <servlet-class>com.asual.lesscss.LessServlet</servlet-class>
-        <init-param>
-            <param-name>gzip</param-name>
-            <param-value>true</param-value>
-        </init-param>
         <init-param>
             <param-name>compress</param-name>
             <param-value>true</param-value>
@@ -37,7 +33,7 @@ in the web.xml descriptor file.
     
     <servlet-mapping>
         <servlet-name>less</servlet-name>
-        <url-pattern>*.js</url-pattern>
+        <url-pattern>/resources/js/*</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
