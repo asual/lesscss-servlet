@@ -43,7 +43,7 @@ public class LessResource extends StyleResource {
                         engine.compile((URL) resource) : engine.compile((File) resource))
                         .getBytes(charset);
         	} else {
-        		content = resource instanceof URL ? ResourceUtils.readUrl((URL) resource) : ResourceUtils.readFile((File) resource);
+        		content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
         	}
         	lastModified = getLastModified();
         	if (compress) {
@@ -55,7 +55,7 @@ public class LessResource extends StyleResource {
 
     public long getLastModified() throws IOException {
         long lastModified = super.getLastModified();
-        String content = new String(resource instanceof URL ? ResourceUtils.readUrl((URL) resource) : ResourceUtils.readFile((File) resource));
+        String content = new String(resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset));
         String folder = path.substring(0, path.lastIndexOf(System.getProperty("file.separator")) + 1);
         Pattern p = Pattern.compile("@import\\s+(\"[^\"]*\"|'[^']*')");
         Matcher m = p.matcher(content);

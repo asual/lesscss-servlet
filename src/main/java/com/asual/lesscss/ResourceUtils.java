@@ -16,9 +16,11 @@
 
 package com.asual.lesscss;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -32,12 +34,12 @@ public class ResourceUtils {
     
     private static final Log logger = LogFactory.getLog(ResourceUtils.class);
     
-    public static byte[] readUrl(URL source) throws IOException {
+    public static byte[] readTextUrl(URL source, String encoding) throws IOException {
         
         URLConnection urlc = source.openConnection();
         StringBuffer sb = new StringBuffer(1024);
         try {
-            UnicodeReader input = new UnicodeReader(urlc.getInputStream(), null);
+            UnicodeReader input = new UnicodeReader(urlc.getInputStream(), encoding);
             try {
                 char[] cbuf = new char[32];
                 int r;
@@ -54,11 +56,11 @@ public class ResourceUtils {
         }
     }
     
-    public static byte[] readFile(File source) throws IOException {
+    public static byte[] readTextFile(File source, String encoding) throws IOException {
         
         StringBuffer sb = new StringBuffer(1024);
         try {
-            UnicodeReader input = new UnicodeReader(new FileInputStream(source), null);
+            UnicodeReader input = new UnicodeReader(new FileInputStream(source), encoding);
             try {
                 char[] cbuf = new char[32];
                 int r;
@@ -73,5 +75,49 @@ public class ResourceUtils {
             logger.error("Can't read '" + source.getAbsolutePath() + "'.");
             throw e;
         }
+    }
+    
+    public static byte[] readBinaryUrl(URL source) throws IOException {
+        
+        URLConnection urlc = source.openConnection();
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        try {
+            InputStream input = urlc.getInputStream();
+            try {
+                byte[] buffer = new byte[1024];
+                int bytesRead = -1;
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    byteStream.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                input.close();
+            }
+        } catch (IOException e) {
+            logger.error("Can't read '" + source.getFile() + "'.");
+            throw e;
+        }
+        return byteStream.toByteArray();        
+    }
+    
+    public static byte[] readBinaryFile(File source) throws IOException {
+        
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        try {
+            FileInputStream input = new FileInputStream(source);
+            try {
+                byte[] buffer = new byte[1024];
+                int bytesRead = -1;
+                while ((bytesRead = input.read(buffer)) != -1) {
+                    byteStream.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                input.close();
+            }
+        } catch (IOException e) {
+            logger.error("Can't read '" + source.getAbsolutePath() + "'.");
+            throw e;
+        }
+        return byteStream.toByteArray();
     }    
+    
 }

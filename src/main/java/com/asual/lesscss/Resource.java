@@ -46,7 +46,7 @@ public class Resource {
     
     public byte[] getContent() throws Exception {
         if (content == null || (content != null && lastModified < getLastModified())) {
-        	content = resource instanceof URL ? ResourceUtils.readUrl((URL) resource) : ResourceUtils.readFile((File) resource);
+        	content = resource instanceof URL ? ResourceUtils.readBinaryUrl((URL) resource) : ResourceUtils.readBinaryFile((File) resource);
         	lastModified = getLastModified();
         }
         return content;
