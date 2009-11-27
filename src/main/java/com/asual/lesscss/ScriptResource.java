@@ -44,7 +44,7 @@ public class ScriptResource extends Resource {
 
     public byte[] getContent() throws Exception {
         if (content == null || (content != null && lastModified < getLastModified())) {
-        	content = resource instanceof URL ? ResourceUtils.readUrl((URL) resource) : ResourceUtils.readFile((File) resource);
+        	content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
         	lastModified = getLastModified();
         	if (compress) {
         		compress();
