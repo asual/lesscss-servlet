@@ -18,6 +18,7 @@ package com.asual.lesscss;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -43,6 +44,7 @@ public class ResourceServlet extends HttpServlet {
     protected int maxAge = 31556926;
     protected int milliseconds = 1000;
     protected String charset = "UTF-8";
+    protected String separator = ";";
     protected boolean compress = false;
     protected Map<String, Resource> resources;
     protected Map<String, String> mimeTypes = new HashMap<String, String>();
@@ -60,6 +62,9 @@ public class ResourceServlet extends HttpServlet {
         if (getServletConfig() != null) {
             if (getInitParameter("charset") != null) {
                 charset = getInitParameter("charset");
+            }
+            if (getInitParameter("separator") != null) {
+                separator = getInitParameter("separator");
             }
             if (getInitParameter("compress") != null) {
                 compress = Boolean.valueOf(getInitParameter("compress"));
@@ -91,74 +96,129 @@ public class ResourceServlet extends HttpServlet {
     protected File getFile(String path) {
         try {
             return new File(getServletContext().getRealPath(path));
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            
+        }
         return null;
     }
 
-    protected Resource getResource(String path, Object resource, String mimeType) {
-    	if (!resources.containsKey(path)) {
+    protected Resource getResource(String uri, Object resource) {
+        String mimeType = getResorceMimeType(uri);
+    	if (!resources.containsKey(uri)) {
     		if ("text/css".equals(mimeType)) {
-	        	resources.put(path, new StyleResource(path, resource, charset, compress));
+	        	resources.put(uri, new StyleResource(uri, resource, charset, compress));
 	        } else if ("text/javascript".equals(mimeType)) {
-	        	resources.put(path, new ScriptResource(path, resource, charset, compress));
+	        	resources.put(uri, new ScriptResource(uri, resource, charset, compress));
 	        } else {
-	        	resources.put(path, new Resource(path, resource, charset, compress));
+	        	resources.put(uri, new Resource(uri, resource, charset, compress));
 	        }
     	}
-    	return resources.get(path);
+    	return resources.get(uri);
     }
     
-    public void service(HttpServletRequest request, HttpServletResponse response) 
-        throws IOException, MalformedURLException, ResourceNotFoundException, ServletException {
-
-        URL url = getUrl(request.getRequestURI());
-        File file = getFile(request.getRequestURI());
+    protected byte[] getResorceContent(String uri) 
+        throws MalformedURLException, ResourceNotFoundException, ServletException {
+        
+        URL url = getUrl(uri);
+        File file = getFile(uri);
         
         if (url != null || (file != null && file.exists())) {
             
             String path = url != null ? url.getPath() : file.getAbsolutePath();
-            String extension = path.substring(path.lastIndexOf(".") + 1);
-            String mimeType = (mimeTypes.containsKey(extension)) ? mimeTypes.get(extension) : getServletContext().getMimeType(path);
-            Resource resource = getResource(path, url != null ? url : file, mimeType);
+            Resource resource = getResource(path, url != null ? url : file);
+                        
+            try {
+                return resource.getContent();
+            } catch (Exception e) {
+                logger.error("Error processing: " + uri);
+                throw new ServletException(e.getMessage(), e);
+            }
 
-            long ifModifiedSince = request.getDateHeader("If-Modified-Since");
-            long lastModified;
+        } else {
+            
+            logger.error("Error processing: " + uri);
+            throw new ResourceNotFoundException("Error processing: " + uri);
+        }        
+    }
+    
+    protected long getResorceLastModified(String uri)
+        throws MalformedURLException, ResourceNotFoundException, ServletException {
+        
+        URL url = getUrl(uri);
+        File file = getFile(uri);
+        
+        if (url != null || (file != null && file.exists())) {
+            
+            String path = url != null ? url.getPath() : file.getAbsolutePath();
+            Resource resource = getResource(path, url != null ? url : file);
             
             try {
-                lastModified = resource.getLastModified();
+                return resource.getLastModified();
             } catch (Exception e) {
-                logger.error("Error processing: " + request.getRequestURI());
+                logger.error("Error processing: " + uri);
                 throw new ServletException(e.getMessage(), e);
             }            
             
-            if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
-                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                return;
-            }
-            
-            byte[] content = null;
-                        
-            try {
-                content = resource.getContent();
-            } catch (Exception e) {
-                logger.error("Error processing: " + request.getRequestURI());
-                throw new ServletException(e.getMessage(), e);
-            }
-            
-            response.setContentType(mimeType);
-            response.setDateHeader("Expires", new Date().getTime() + maxAge*milliseconds);
-            response.addDateHeader("Cache-control: max-age=", maxAge);
-            response.addDateHeader("Last-Modified", lastModified);
-            response.setContentLength(content.length);
-            response.getOutputStream().write(content);
-            response.getOutputStream().flush();
-            response.getOutputStream().close();
-            
         } else {
             
-            logger.error("Error processing: " + request.getRequestURI());
-            throw new ResourceNotFoundException("Error processing: " + request.getRequestURI());
+            logger.error("Error processing: " + uri);
+            throw new ResourceNotFoundException("Error processing: " + uri);
+        }         
+    }
+    
+    protected String getResorceMimeType(String uri) {
+        
+        String extension = uri.substring(uri.lastIndexOf(".") + 1);
+        return mimeTypes.containsKey(extension) ? mimeTypes.get(extension) : getServletContext().getMimeType(uri);
+    }
+    
+    protected byte[] mergeContent(byte[] c1, byte[] c2) throws UnsupportedEncodingException {
+        
+        byte[] line = "\n".getBytes(charset);
+        int l1 = c1.length;
+        int l2 = l1 != 0 ? line.length : 0;
+        int l3 = c2.length;
+        byte[] result = new byte[l1 + l2 + l3];
+        
+        for (int i = 0; i < l1; i++) {
+            result[i] = c1[i];
         }
+        for (int i = 0; i < l2; i++) {
+            result[i + l1] = line[i];
+        }
+        for (int i = 0; i < l3; i++) {
+            result[i + l1 + l2] = c2[i];
+        }
+        return result;
+    }
+
+    public void service(HttpServletRequest request, HttpServletResponse response) 
+        throws IOException, MalformedURLException, ResourceNotFoundException, ServletException {
+
+        String mimeType = getResorceMimeType(request.getRequestURI());
+        
+        long lastModified = 0;
+        byte[] content = new byte[0];
+        
+        for (String uri : request.getRequestURI().split(separator)) {
+            content = mergeContent(content, getResorceContent(uri));
+            lastModified = Math.max(lastModified, getResorceLastModified(uri));
+        }
+        
+        long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+        if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            return;
+        }
+        
+        response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
+        response.setDateHeader("Expires", new Date().getTime() + maxAge*milliseconds);
+        response.addDateHeader("Cache-control: max-age=", maxAge);
+        response.addDateHeader("Last-Modified", lastModified);
+        response.setContentLength(content.length);
+        response.getOutputStream().write(content);
+        response.getOutputStream().flush();
+        response.getOutputStream().close();
     }
     
 }

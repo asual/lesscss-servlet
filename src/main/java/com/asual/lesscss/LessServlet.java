@@ -33,16 +33,17 @@ public class LessServlet extends ResourceServlet {
     	engine.destroy();
     }
 
-    protected Resource getResource(String path, Object object, String mimeType) {
-    	if (!resources.containsKey(path)) {
+    protected Resource getResource(String uri, Object object) {
+        String mimeType = getResorceMimeType(uri);
+    	if (!resources.containsKey(uri)) {
 	    	if ("text/css".equals(mimeType)) {
-	    		resources.put(path, new LessResource(engine, path, object, charset, compress));
-	    		return resources.get(path);
+	    		resources.put(uri, new LessResource(engine, uri, object, charset, compress));
+	    		return resources.get(uri);
 	    	} else {
-	        	return super.getResource(path, object, mimeType);
+	        	return super.getResource(uri, object);
 	        }
     	} else {
-    		return resources.get(path);
+    		return resources.get(uri);
     	}
     }
     
