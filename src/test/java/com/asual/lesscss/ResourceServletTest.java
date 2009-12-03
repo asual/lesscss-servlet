@@ -29,29 +29,52 @@ import org.mortbay.jetty.testing.ServletTester;
 /**
  * @author Rostislav Hristov
  */
-public class LessServletTest  {
+public class ResourceServletTest  {
 
     private static ServletTester tester;
  
     @BeforeClass
     public static void before() throws Exception {
         tester = new ServletTester();
-        tester.setClassLoader(LessServletTest.class.getClassLoader());
+        tester.setClassLoader(ResourceServletTest.class.getClassLoader());
         tester.setContextPath("/");
-        tester.addServlet(LessServlet.class, "*.css");
+        tester.addServlet(ResourceServlet.class, "/*")
+            .setInitParameter("compress", "true");
         tester.start();
     }
   
     @Test
-    public void css() throws IOException, Exception {
+    public void img() throws IOException, Exception {
         HttpTester request = new HttpTester();
         request.setMethod("GET");
         request.setHeader("Host", "tester");
         request.setVersion("HTTP/1.1");
-        request.setURI("/test.css");
+        request.setURI("/logo.png");
         HttpTester response = new HttpTester();
         response.parse(tester.getResponses(request.generate()));
-        assertEquals("body { color: #f0f0f0; }", response.getContent());
+        assertEquals("image/png", response.getContentType());
+        assertEquals(13831, response.getContent().getBytes("UTF-8").length);
+    }
+    
+    @Test
+    public void js() throws IOException, Exception {
+        HttpTester request = new HttpTester();
+        request.setMethod("GET");
+        request.setHeader("Host", "tester");
+        request.setVersion("HTTP/1.1");
+        request.setURI("/test1.js;/test2.js");
+        HttpTester response = new HttpTester();
+        response.parse(tester.getResponses(request.generate()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("/**\n");
+        sb.append(" * License and copyright 1\n");
+        sb.append(" */\n");
+        sb.append("var test1=1;\n");
+        sb.append("/**\n");
+        sb.append(" * License and copyright 2\n");
+        sb.append(" */\n");
+        sb.append("var test2=2;");
+        assertEquals(sb.toString(), response.getContent());
     }
     
     @AfterClass
