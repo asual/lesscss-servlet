@@ -11,7 +11,7 @@
     <scm>
         <url>scm:git:git://github.com/asual/lesscss-servlet.git</url>
     </scm>
-    <version>1.2.11</version>
+    <version>1.2.19</version>
     <description>A Servlet wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
     <url>http://www.asual.com/lesscss</url>
     <licenses>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.asual.lesscss</groupId>
             <artifactId>lesscss-engine</artifactId>
-            <version>1.2.11</version>
+            <version>1.2.19</version>
         </dependency>    
         <dependency>  
 			<groupId>javax.servlet</groupId>
@@ -119,8 +119,10 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <includes>
-                    <include>log4j.xml</include>
                     <include>**/*.css</include>
+                    <include>**/*.js</include>
+                    <include>**/*.png</include>
+                    <include>**/*.xml</include>
                 </includes>
             </testResource>
         </testResources>
