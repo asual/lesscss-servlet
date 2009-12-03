@@ -57,7 +57,7 @@ public class ScriptResource extends Resource {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Reader in = new InputStreamReader(
                 new ByteArrayInputStream(
-                        (new String(content))
+                        (new String(content, charset))
                             .replaceFirst("^/\\*", "/*!")
                             .getBytes(charset)), 
                             charset);
