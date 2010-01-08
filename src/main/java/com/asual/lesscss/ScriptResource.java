@@ -27,6 +27,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
 
+import javax.servlet.ServletContext;
+
 import org.mozilla.javascript.ErrorReporter;
 import org.mozilla.javascript.EvaluatorException;
 
@@ -36,14 +38,16 @@ import com.yahoo.platform.yui.compressor.JavaScriptCompressor;
  * @author Rostislav Hristov
  */
 public class ScriptResource extends Resource {
+    
+    protected boolean compress;
 
-    public ScriptResource(String path, Object resource, 
-            String charset, boolean compress) {
-        super(path, resource, charset, compress);
+    public ScriptResource(ServletContext servletContext, String uri, String charset, boolean cache, boolean compress) throws ResourceNotFoundException {
+        super(servletContext, uri, charset, cache);
+        this.compress = compress;
     }
 
-    public byte[] getContent() throws Exception {
-        if (content == null || (content != null && lastModified < getLastModified())) {
+    public byte[] getContent() throws IOException {
+        if (content == null || (content != null && !cache && lastModified < getLastModified())) {
         	content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
         	lastModified = getLastModified();
         	if (compress) {

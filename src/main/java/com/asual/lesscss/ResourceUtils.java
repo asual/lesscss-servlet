@@ -35,53 +35,59 @@ public class ResourceUtils {
     private static final Log logger = LogFactory.getLog(ResourceUtils.class);
     
     public static byte[] readTextUrl(URL source, String encoding) throws IOException {
-        
-        URLConnection urlc = source.openConnection();
-        StringBuffer sb = new StringBuffer(1024);
+        byte[] result;
         try {
-            UnicodeReader input = new UnicodeReader(urlc.getInputStream(), encoding);
+            URLConnection urlc = source.openConnection();
+            StringBuffer sb = new StringBuffer(1024);
+            InputStream input = urlc.getInputStream();
+            UnicodeReader reader = new UnicodeReader(input, encoding);
             try {
                 char[] cbuf = new char[32];
                 int r;
-                while ((r = input.read(cbuf, 0, 32)) != -1) {
+                while ((r = reader.read(cbuf, 0, 32)) != -1) {
                     sb.append(cbuf, 0, r);
                 }
-                return sb.toString().getBytes(input.getEncoding());
+                result = sb.toString().getBytes(reader.getEncoding());
             } finally {
+                reader.close();
                 input.close();
             }
         } catch (IOException e) {
             logger.error("Can't read '" + source.getFile() + "'.");
             throw e;
         }
+        return result;
     }
     
     public static byte[] readTextFile(File source, String encoding) throws IOException {
-        
-        StringBuffer sb = new StringBuffer(1024);
+        byte[] result;
         try {
-            UnicodeReader input = new UnicodeReader(new FileInputStream(source), encoding);
+            StringBuffer sb = new StringBuffer(1024);
+            FileInputStream input = new FileInputStream(source);
+            UnicodeReader reader = new UnicodeReader(input, encoding);
             try {
                 char[] cbuf = new char[32];
                 int r;
-                while ((r = input.read(cbuf, 0, 32)) != -1) {
+                while ((r = reader.read(cbuf, 0, 32)) != -1) {
                     sb.append(cbuf, 0, r);
                 }
-                return sb.toString().getBytes(input.getEncoding());
+                result = sb.toString().getBytes(reader.getEncoding());
             } finally {
+                reader.close();
                 input.close();
             }
         } catch (IOException e) {
             logger.error("Can't read '" + source.getAbsolutePath() + "'.");
             throw e;
         }
+        return result;
     }
     
     public static byte[] readBinaryUrl(URL source) throws IOException {
-        
-        URLConnection urlc = source.openConnection();
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        byte[] result;
         try {
+            URLConnection urlc = source.openConnection();
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             InputStream input = urlc.getInputStream();
             try {
                 byte[] buffer = new byte[1024];
@@ -89,20 +95,22 @@ public class ResourceUtils {
                 while ((bytesRead = input.read(buffer)) != -1) {
                     byteStream.write(buffer, 0, bytesRead);
                 }
+                result = byteStream.toByteArray();
             } finally {
+                byteStream.close();
                 input.close();
             }
         } catch (IOException e) {
             logger.error("Can't read '" + source.getFile() + "'.");
             throw e;
         }
-        return byteStream.toByteArray();        
+        return result;
     }
     
     public static byte[] readBinaryFile(File source) throws IOException {
-        
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        byte[] result;
         try {
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             FileInputStream input = new FileInputStream(source);
             try {
                 byte[] buffer = new byte[1024];
@@ -110,14 +118,16 @@ public class ResourceUtils {
                 while ((bytesRead = input.read(buffer)) != -1) {
                     byteStream.write(buffer, 0, bytesRead);
                 }
+                result = byteStream.toByteArray();
             } finally {
+                byteStream.close();
                 input.close();
             }
         } catch (IOException e) {
             logger.error("Can't read '" + source.getAbsolutePath() + "'.");
             throw e;
         }
-        return byteStream.toByteArray();
+        return result;
     }    
     
 }

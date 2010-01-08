@@ -18,7 +18,10 @@ package com.asual.lesscss;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+
+import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,24 +31,36 @@ import org.apache.commons.logging.LogFactory;
  */
 public class Resource {
 
+    protected ServletContext servletContext;
     protected String path;
     protected Object resource;
     protected String charset;
-    protected boolean compress;
+    protected boolean cache;
     protected byte[] content;
-    protected long lastModified;
+    protected Long lastModified;
 
     protected final Log logger = LogFactory.getLog(getClass());
 
-    public Resource(String path, Object resource, String charset, boolean compress) {
-        this.path = path;
-        this.resource = resource;
+    public Resource(ServletContext servletContext, String uri, String charset, boolean cache) throws ResourceNotFoundException {
+
+        this.servletContext = servletContext;
         this.charset = charset;
-        this.compress = compress;
+        this.cache = cache;
+
+        URL url = getUrl(uri);
+        File file = getFile(uri);
+        
+        if (url != null || (file != null && file.exists())) {
+            path = url != null ? url.getPath() : file.getAbsolutePath();
+            resource = url != null ? url : file;
+        } else {
+            logger.error("Error processing: " + uri);
+            throw new ResourceNotFoundException("Error processing: " + uri);            
+        }
     }
     
     public byte[] getContent() throws Exception {
-        if (content == null || (content != null && lastModified < getLastModified())) {
+        if (content == null || (content != null && !cache && lastModified < getLastModified())) {
         	content = resource instanceof URL ? ResourceUtils.readBinaryUrl((URL) resource) : ResourceUtils.readBinaryFile((File) resource);
         	lastModified = getLastModified();
         }
@@ -53,7 +68,40 @@ public class Resource {
     }
 
     public long getLastModified() throws IOException {
-        return resource instanceof URL ? ((URL) resource).openConnection().getLastModified() : ((File) resource).lastModified();        
+        if (lastModified == null || !cache) {
+            lastModified = resource instanceof URL ? ((URL) resource).openConnection().getLastModified() : ((File) resource).lastModified();
+        }
+        return lastModified;
     }
     
+    protected URL getUrl(String path) {
+        try {
+            URL url = servletContext.getResource("/META-INF" + path);
+            if (url != null) {
+                return url;
+            }
+            url = servletContext.getResource("/META-INF/resources" + path);
+            if (url != null) {
+                return url;
+            }
+            url = getClass().getClassLoader().getResource("META-INF" + path);
+            if (url != null) {
+                return url;
+            }
+            url = getClass().getClassLoader().getResource("META-INF/resources" + path);
+            if (url != null) {
+                return url;
+            }
+        } catch (MalformedURLException e) {
+        }
+        return null;
+    }
+    
+    protected File getFile(String path) {
+        try {
+            return new File(servletContext.getRealPath(path));
+        } catch (Exception e) {
+        }
+        return null;
+    }    
 }

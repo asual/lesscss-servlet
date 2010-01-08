@@ -26,6 +26,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 
+import javax.servlet.ServletContext;
+
 import com.yahoo.platform.yui.compressor.CssCompressor;
 
 /**
@@ -33,13 +35,15 @@ import com.yahoo.platform.yui.compressor.CssCompressor;
  */
 public class StyleResource extends Resource {
 
-    public StyleResource(String path, Object resource, 
-    		String charset, boolean compress) {
-		super(path, resource, charset, compress);
+    protected boolean compress;
+    
+    public StyleResource(ServletContext servletContext, String uri, String charset, boolean cache, boolean compress) throws ResourceNotFoundException {
+        super(servletContext, uri, charset, cache);
+        this.compress = compress;
 	}
 
-    public byte[] getContent(String path) throws Exception {
-        if (content == null || (content != null && lastModified < getLastModified())) {
+    public byte[] getContent(String path) throws IOException {
+        if (content == null || (content != null && !cache && lastModified < getLastModified())) {
         	content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
         	lastModified = getLastModified();
         	if (compress) {
