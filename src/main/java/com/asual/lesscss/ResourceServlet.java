@@ -18,7 +18,6 @@ package com.asual.lesscss;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class ResourceServlet extends HttpServlet {
     
     protected final Log logger = LogFactory.getLog(getClass());
     protected int maxAge = 31556926;
-    protected int milliseconds = 1000;
+    protected long milliseconds = 1000L;
     protected boolean cache;
     protected boolean compress;
     protected String charset = "UTF-8";
@@ -48,16 +47,16 @@ public class ResourceServlet extends HttpServlet {
     protected Map<String, String> mimeTypes = new HashMap<String, String>();
     {
         mimeTypes.put("css", "text/css");
+        mimeTypes.put("html", "text/html");
+        mimeTypes.put("htm", "text/html");
+        mimeTypes.put("js", "text/javascript");
+        mimeTypes.put("txt", "text/plain");
+        mimeTypes.put("xml", "text/xml");
         mimeTypes.put("gif", "image/gif");
         mimeTypes.put("ico", "image/vnd.microsoft.icon");
         mimeTypes.put("jpeg", "image/jpeg");
         mimeTypes.put("jpg", "image/jpeg");
-        mimeTypes.put("js", "text/javascript");
         mimeTypes.put("png", "image/png");
-        mimeTypes.put("html", "text/html");
-        mimeTypes.put("htm", "text/html");
-        mimeTypes.put("txt", "text/plain");
-        mimeTypes.put("xml", "text/xml");
     }
     
     public void init() {
@@ -151,9 +150,9 @@ public class ResourceServlet extends HttpServlet {
             }
             
             response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
-            response.setDateHeader("Expires", new Date().getTime() + maxAge*milliseconds);
-            response.addDateHeader("Cache-control: max-age=", maxAge);
-            response.addDateHeader("Last-Modified", lastModified);
+            response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
+            response.setDateHeader("Last-Modified", lastModified);
+            response.setHeader("Cache-control", "max-age=" + maxAge);
             response.setContentLength(content.length);
             response.getOutputStream().write(content);
             response.getOutputStream().flush();
