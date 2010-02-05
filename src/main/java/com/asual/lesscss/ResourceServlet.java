@@ -53,7 +53,7 @@ public class ResourceServlet extends HttpServlet {
         mimeTypes.put("txt", "text/plain");
         mimeTypes.put("xml", "text/xml");
         mimeTypes.put("gif", "image/gif");
-        mimeTypes.put("ico", "image/vnd.microsoft.icon");
+        mimeTypes.put("ico", "image/x-icon");
         mimeTypes.put("jpeg", "image/jpeg");
         mimeTypes.put("jpg", "image/jpeg");
         mimeTypes.put("png", "image/png");
