@@ -82,7 +82,7 @@ public class ScriptResource extends Resource {
             }
         });
         in.close();
-        compressor.compress(out, -1, false, false, true, false);
+        compressor.compress(out, -1, true, false, true, false);
         out.flush();
         content = baos.toByteArray();
         out.close();

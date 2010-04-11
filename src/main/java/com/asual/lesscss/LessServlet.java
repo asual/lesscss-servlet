@@ -29,10 +29,6 @@ public class LessServlet extends ResourceServlet {
         engine = new LessEngine();
     }
 
-    public void destroy() {
-    	engine.destroy();
-    }
-
     protected Resource getResource(String uri) throws ResourceNotFoundException {
         String mimeType = getResorceMimeType(uri);
     	if (!resources.containsKey(uri)) {

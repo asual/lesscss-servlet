@@ -41,7 +41,7 @@ public class LessResource extends StyleResource {
         	if (engine != null) {
                 content = (resource instanceof URL ? 
                         engine.compile((URL) resource) : engine.compile((File) resource))
-                        .getBytes(charset);
+                        .replaceAll("\\\\n", "\n").getBytes(charset);
         	} else {
         		content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
         	}
