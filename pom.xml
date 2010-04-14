@@ -9,7 +9,8 @@
     <packaging>jar</packaging>
     <name>LESS Servlet</name>
     <scm>
-        <url>scm:git:git://github.com/asual/lesscss-servlet.git</url>
+        <url>http://github.com/asual/lesscss-servlet</url>
+        <connection>scm:git:git://github.com/asual/lesscss-servlet.git</connection>
     </scm>
     <version>2.0.0</version>
     <description>A Servlet wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
@@ -69,13 +70,13 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>7.0.1.v20091125</version>
+            <version>7.0.2.RC0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>test-jetty-servlet</artifactId>
-            <version>7.0.1.v20091125</version>
+            <version>7.0.2.RC0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
