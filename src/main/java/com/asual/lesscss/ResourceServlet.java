@@ -21,6 +21,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,10 +40,11 @@ public class ResourceServlet extends HttpServlet {
     private static final long serialVersionUID = 413708886190444579L;
     
     protected final Log logger = LogFactory.getLog(getClass());
+    protected Context initialContext = null;
+    protected boolean cache = true;
+    protected boolean compress = true;
     protected int maxAge = 31556926;
     protected long milliseconds = 1000L;
-    protected boolean cache;
-    protected boolean compress;
     protected String charset = "UTF-8";
     protected String separator = ";";
     protected Map<String, Resource> resources;
@@ -60,6 +64,7 @@ public class ResourceServlet extends HttpServlet {
     }
     
     public void init() {
+        
         if (getServletConfig() != null) {
             if (getInitParameter("charset") != null) {
                 charset = getInitParameter("charset");
@@ -74,29 +79,62 @@ public class ResourceServlet extends HttpServlet {
                 compress = Boolean.valueOf(getInitParameter("compress"));
             }
         }
-    	resources = new HashMap<String, Resource>();
+
+        try {
+            initialContext = new InitialContext();
+        } catch (NamingException ne) {
+        }
+        
+        if (initialContext != null) {
+            if (getJndiParameter("Charset") != null) {
+                charset = (String) getJndiParameter("Charset");
+            }
+            if (getJndiParameter("Separator") != null) {
+                separator = (String) getJndiParameter("Separator");
+            }
+            if (getJndiParameter("Cache") != null) {
+                cache = (Boolean) getJndiParameter("Cache");
+            }
+            if (getJndiParameter("Compress") != null) {
+                compress = (Boolean) getJndiParameter("Compress");
+            }
+        }
+        
+        resources = new HashMap<String, Resource>();
+    }
+    
+    protected Object getJndiParameter(String name) {
+
+    	try {
+            return initialContext.lookup("java:comp/env/resource/" + name);
+        } catch (NamingException ne) {
+        }
+        return null;
     }
 
     protected Resource getResource(String uri) throws ResourceNotFoundException {
+        
         String mimeType = getResorceMimeType(uri);
-    	if (!resources.containsKey(uri)) {
-    		if ("text/css".equals(mimeType)) {
-	        	resources.put(uri, new StyleResource(getServletContext(), uri, charset, cache, compress));
-	        } else if ("text/javascript".equals(mimeType)) {
-	        	resources.put(uri, new ScriptResource(getServletContext(), uri, charset, cache, compress));
-	        } else {
-	        	resources.put(uri, new Resource(getServletContext(), uri, charset, cache));
-	        }
-    	}
-    	return resources.get(uri);
+        if (!resources.containsKey(uri)) {
+            if ("text/css".equals(mimeType)) {
+                resources.put(uri, new StyleResource(getServletContext(), uri, charset, cache, compress));
+            } else if ("text/javascript".equals(mimeType)) {
+                resources.put(uri, new ScriptResource(getServletContext(), uri, charset, cache, compress));
+            } else {
+                resources.put(uri, new Resource(getServletContext(), uri, charset, cache));
+            }
+        }
+        return resources.get(uri);
     }
     
     protected byte[] getResorceContent(String uri) throws Exception {
+        
         Resource resource = getResource(uri);
         return resource.getContent();
     }
     
     protected long getResorceLastModified(String uri) throws ResourceNotFoundException, IOException {
+        
         Resource resource = getResource(uri);
         return resource.getLastModified();
     }
@@ -139,6 +177,9 @@ public class ResourceServlet extends HttpServlet {
             byte[] content = new byte[0];
             
             for (String resource : uri.split(separator)) {
+                if (!"/".equals(request.getContextPath())) {
+                    resource = resource.substring(request.getContextPath().length());
+                }
                 content = mergeContent(content, getResorceContent(resource));
                 lastModified = Math.max(lastModified, getResorceLastModified(resource));
             }
