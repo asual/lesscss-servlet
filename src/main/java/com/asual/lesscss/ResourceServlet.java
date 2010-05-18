@@ -104,8 +104,7 @@ public class ResourceServlet extends HttpServlet {
     }
     
     protected Object getJndiParameter(String name) {
-
-    	try {
+        try {
             return initialContext.lookup("java:comp/env/resource/" + name);
         } catch (NamingException ne) {
         }
@@ -170,16 +169,15 @@ public class ResourceServlet extends HttpServlet {
 
         try {
             
-            String uri = request.getRequestURI().replaceAll("/+", "/");
-            String mimeType = getResorceMimeType(uri);
+            String pkg = request.getParameter("package");
+            String[] uri = (pkg != null) ? pkg.split(separator) : new String[] {request.getRequestURI().replaceAll("/+", "/")};
+            String mimeType = getResorceMimeType(uri[0]);
             
             long lastModified = 0;
             byte[] content = new byte[0];
             
-            for (String resource : uri.split(separator)) {
-                if (!"/".equals(request.getContextPath())) {
-                    resource = resource.substring(request.getContextPath().length());
-                }
+            for (String resource : uri) {
+            	resource = resource.replaceAll("^" + request.getContextPath(), "");
                 content = mergeContent(content, getResorceContent(resource));
                 lastModified = Math.max(lastModified, getResorceLastModified(resource));
             }
