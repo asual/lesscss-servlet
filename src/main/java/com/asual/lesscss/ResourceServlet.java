@@ -61,6 +61,11 @@ public class ResourceServlet extends HttpServlet {
         mimeTypes.put("jpeg", "image/jpeg");
         mimeTypes.put("jpg", "image/jpeg");
         mimeTypes.put("png", "image/png");
+        mimeTypes.put("ttf", "application/x-font-truetype");
+        mimeTypes.put("otf", "application/x-font-truetype");
+        mimeTypes.put("eot", "application/vnd.ms-fontobject");
+        mimeTypes.put("woff", "application/x-woff");
+        mimeTypes.put("svg", "image/svg+xml");
     }
     
     public void init() {
