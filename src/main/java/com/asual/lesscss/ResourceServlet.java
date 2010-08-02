@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 the original author or authors.
+ * Copyright 2009-2010 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * @author Rostislav Hristov
  */
@@ -39,7 +36,6 @@ public class ResourceServlet extends HttpServlet {
 
     private static final long serialVersionUID = 413708886190444579L;
     
-    protected final Log logger = LogFactory.getLog(getClass());
     protected Context initialContext = null;
     protected boolean cache = true;
     protected boolean compress = true;
@@ -174,7 +170,7 @@ public class ResourceServlet extends HttpServlet {
 
         try {
             
-            String pkg = request.getParameter("package");
+            String pkg = request.getParameter("pack");
             String[] uri = (pkg != null) ? pkg.split(separator) : new String[] {request.getRequestURI().replaceAll("/+", "/")};
             String mimeType = getResorceMimeType(uri[0]);
             

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 the original author or authors.
+ * Copyright 2009-2010 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,11 +69,11 @@ public class ScriptResource extends Resource {
         JavaScriptCompressor compressor = new JavaScriptCompressor(in, new ErrorReporter() {
             public void warning(String message, String sourceName,
                     int line, String lineSource, int lineOffset) {
-                logger.error("message: " + message + (lineSource != null ? ", line: " + line + ", column: " + lineOffset + ", source: " + lineSource : ""));
+                logger.error("Message: " + message + (lineSource != null ? ", Line: " + line + ", Column: " + lineOffset + ", Source: " + lineSource : "") + ".");
             }
             public void error(String message, String sourceName,
                     int line, String lineSource, int lineOffset) {
-                logger.error("message: " + message + (lineSource != null ? ", line: " + line + ", column: " + lineOffset + ", source: " + lineSource : ""));
+                logger.error("Message: " + message + (lineSource != null ? ", Line: " + line + ", Column: " + lineOffset + ", Source: " + lineSource : "") + ".");
             }
             public EvaluatorException runtimeError(String message, String sourceName,
                     int line, String lineSource, int lineOffset) {

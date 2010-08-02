@@ -62,7 +62,7 @@ public class ResourceServletTest  {
         request.setMethod("GET");
         request.setHeader("Host", "tester");
         request.setVersion("HTTP/1.1");
-        request.setURI("/?package=/test1.js;/test2.js");
+        request.setURI("/?pack=/test1.js;/test2.js");
         HttpTester response = new HttpTester();
         response.parse(tester.getResponses(request.generate()));
         StringBuilder sb = new StringBuilder();

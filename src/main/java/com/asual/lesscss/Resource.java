@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 the original author or authors.
+ * Copyright 2009-2010 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,8 @@ public class Resource {
             path = url != null ? url.getPath() : file.getAbsolutePath();
             resource = url != null ? url : file;
         } else {
-            logger.error("Error processing: " + uri);
-            throw new ResourceNotFoundException("Error processing: " + uri);            
+            logger.error("Error processing " + uri + ".");
+            throw new ResourceNotFoundException("Error processing " + uri + ".");            
         }
     }
     
