@@ -1,4 +1,4 @@
-/**
+/*
  * License and copyright 1
  */
 
