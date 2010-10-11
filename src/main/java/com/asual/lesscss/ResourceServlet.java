@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -82,8 +81,9 @@ public class ResourceServlet extends HttpServlet {
         }
 
         try {
-            initialContext = new InitialContext();
-        } catch (NamingException ne) {
+            initialContext = new javax.naming.InitialContext();
+        } catch (NamingException e) {
+        } catch (NoClassDefFoundError e) {
         }
         
         if (initialContext != null) {
