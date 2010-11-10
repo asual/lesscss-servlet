@@ -62,10 +62,11 @@ public class LessResource extends StyleResource {
             Matcher m = p.matcher(content);
             while (m.find()) {
                 String path = folder + m.group(1).replaceAll("\"|'", "");
-                long importLastModified = (new File(path)).lastModified();
-                if (importLastModified == 0) {
-                    importLastModified = (new File(path + ".less")).lastModified();
+                File includedFile = new File(path);
+                if (!includedFile.exists()) {
+                    includedFile = new File(path + ".less");
                 }
+                long importLastModified = includedFile.lastModified();
                 if (importLastModified > lastModified) {
                     lastModified = importLastModified;
                 }
