@@ -9,7 +9,7 @@
     <artifactId>lesscss-servlet</artifactId>
     <packaging>jar</packaging>
     <name>LESS Servlet</name>
-    <version>1.0.33</version>
+    <version>1.0.41</version>
     <description>A Servlet wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
     <url>http://www.asual.com/lesscss</url>
 
@@ -30,7 +30,7 @@
         <repository>
             <id>com.asual.repositories.releases</id>
             <name>Asual Releases Repository</name>
-            <url>http://www.asual.com/nexus/content/repositories/releases</url>
+            <url>http://www.asual.com/maven/content/repositories/releases</url>
         </repository>
     </distributionManagement>
     
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>com.asual.lesscss</groupId>
             <artifactId>lesscss-engine</artifactId>
-            <version>1.0.33</version>
+            <version>1.0.41</version>
             <exclusions>
                 <exclusion>
                    <groupId>rhino</groupId>
