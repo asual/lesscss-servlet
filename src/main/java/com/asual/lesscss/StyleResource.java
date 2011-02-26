@@ -43,7 +43,7 @@ public class StyleResource extends Resource {
 	}
 
 	public byte[] getContent(String path) throws IOException {
-		if (content == null || (content != null && !cache && lastModified < getLastModified())) {
+		if (content == null || (!cache && lastModified < getLastModified())) {
 			content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
 			lastModified = getLastModified();
 			if (compress) {

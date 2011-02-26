@@ -16,6 +16,9 @@
 
 package com.asual.lesscss;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -34,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ResourceServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 413708886190444579L;
-	
+	private final Log logger = LogFactory.getLog(getClass());
 	protected Context initialContext = null;
 	protected boolean cache = true;
 	protected boolean compress = true;
@@ -114,7 +117,7 @@ public class ResourceServlet extends HttpServlet {
 
 	protected Resource getResource(String uri) throws ResourceNotFoundException {
 		
-		String mimeType = getResorceMimeType(uri);
+		String mimeType = getResourceMimeType(uri);
 		if (!resources.containsKey(uri)) {
 			if ("text/css".equals(mimeType)) {
 				resources.put(uri, new StyleResource(getServletContext(), uri, charset, cache, compress));
@@ -127,19 +130,19 @@ public class ResourceServlet extends HttpServlet {
 		return resources.get(uri);
 	}
 	
-	protected byte[] getResorceContent(String uri) throws Exception {
+	protected byte[] getResourceContent(String uri) throws Exception {
 		
 		Resource resource = getResource(uri);
 		return resource.getContent();
 	}
 	
-	protected long getResorceLastModified(String uri) throws ResourceNotFoundException, IOException {
+	protected long getResourceLastModified(String uri) throws ResourceNotFoundException, IOException {
 		
 		Resource resource = getResource(uri);
 		return resource.getLastModified();
 	}
 	
-	protected String getResorceMimeType(String uri) {
+	protected String getResourceMimeType(String uri) {
 		
 		String extension = uri.substring(uri.lastIndexOf(".") + 1);
 		String mimeType = mimeTypes.containsKey(extension) ? mimeTypes.get(extension) : getServletContext().getMimeType(uri);
@@ -172,19 +175,20 @@ public class ResourceServlet extends HttpServlet {
 			
 			String pkg = request.getParameter("pack");
 			String[] uri = (pkg != null) ? pkg.split(separator) : new String[] {request.getRequestURI().replaceAll("/+", "/")};
-			String mimeType = getResorceMimeType(uri[0]);
+			String mimeType = getResourceMimeType(uri[0]);
 			
 			long lastModified = 0;
 			byte[] content = new byte[0];
 			
 			for (String resource : uri) {
 				resource = resource.replaceAll("^" + request.getContextPath(), "");
-				content = mergeContent(content, getResorceContent(resource));
-				lastModified = Math.max(lastModified, getResorceLastModified(resource));
+				content = mergeContent(content, getResourceContent(resource));
+				lastModified = Math.max(lastModified, getResourceLastModified(resource));
 			}
 			
 			long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 			if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
+                logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 				return;
 			}

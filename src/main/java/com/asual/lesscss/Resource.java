@@ -60,7 +60,7 @@ public class Resource {
 	}
 	
 	public byte[] getContent() throws Exception {
-		if (content == null || (content != null && !cache && lastModified < getLastModified())) {
+		if (content == null || (!cache && lastModified < getLastModified())) {
 			content = resource instanceof URL ? ResourceUtils.readBinaryUrl((URL) resource) : ResourceUtils.readBinaryFile((File) resource);
 			lastModified = getLastModified();
 		}
@@ -69,8 +69,16 @@ public class Resource {
 
 	public long getLastModified() throws IOException {
 		if (lastModified == null || !cache) {
-			lastModified = resource instanceof URL ? ((URL) resource).openConnection().getLastModified() : ((File) resource).lastModified();
+            if (resource instanceof URL) {
+                lastModified = ((URL) resource).openConnection().getLastModified();
+                logger.debug("getLastModified(), URL resource: " + lastModified + " - for resource: " + resource);
+            }
+            else {
+                lastModified = ((File) resource).lastModified();
+                logger.debug("getLastModified(), File resource: " + lastModified + " - for resource: " + resource);
+            }
 		}
+        logger.debug("getLastModified(): " + lastModified);
 		return lastModified;
 	}
 	

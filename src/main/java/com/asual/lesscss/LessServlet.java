@@ -16,6 +16,9 @@
 
 package com.asual.lesscss;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author Rostislav Hristov
  */
@@ -23,6 +26,7 @@ public class LessServlet extends ResourceServlet {
 
 	private static final long serialVersionUID = 413708886190444579L;
 	private LessEngine engine;
+    private final Log logger = LogFactory.getLog(getClass());
 	
 	public void init() {
 		super.init();
@@ -30,8 +34,9 @@ public class LessServlet extends ResourceServlet {
 	}
 
 	protected Resource getResource(String uri) throws ResourceNotFoundException {
-		String mimeType = getResorceMimeType(uri);
+		String mimeType = getResourceMimeType(uri);
 		if (!resources.containsKey(uri)) {
+            logger.debug("Using new LessResource for uri " + uri);
 			if ("text/css".equals(mimeType)) {
 				resources.put(uri, new LessResource(engine, getServletContext(), uri, charset, cache, compress));
 				return resources.get(uri);
@@ -39,6 +44,7 @@ public class LessServlet extends ResourceServlet {
 				return super.getResource(uri);
 			}
 		} else {
+            logger.debug("Using existing LessResource for uri " + uri);
 			return resources.get(uri);
 		}
 	}
