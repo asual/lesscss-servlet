@@ -49,6 +49,7 @@ public class ResourceServlet extends HttpServlet {
 	protected Map<String, String> mimeTypes = new HashMap<String, String>();
 	{
 		mimeTypes.put("css", "text/css");
+		mimeTypes.put("less", "text/css");
 		mimeTypes.put("html", "text/html");
 		mimeTypes.put("htm", "text/html");
 		mimeTypes.put("js", "text/javascript");
@@ -59,11 +60,18 @@ public class ResourceServlet extends HttpServlet {
 		mimeTypes.put("jpeg", "image/jpeg");
 		mimeTypes.put("jpg", "image/jpeg");
 		mimeTypes.put("png", "image/png");
-		mimeTypes.put("ttf", "application/x-font-truetype");
-		mimeTypes.put("otf", "application/x-font-truetype");
-		mimeTypes.put("eot", "application/vnd.ms-fontobject");
-		mimeTypes.put("woff", "application/x-woff");
 		mimeTypes.put("svg", "image/svg+xml");
+		
+		mimeTypes.put("oga", "audio/ogg");
+		mimeTypes.put("ogg", "audio/ogg");
+		mimeTypes.put("ogv", "video/ogg");
+		mimeTypes.put("mp4", "video/mp4");
+		mimeTypes.put("webm", "video/webm");
+		
+		mimeTypes.put("ttf", "font/truetype");
+		mimeTypes.put("otf", "font/opentype");
+		mimeTypes.put("eot", "application/vnd.ms-fontobject");
+		mimeTypes.put("woff", "application/x-font-woff");
 	}
 	
 	public void init() {
