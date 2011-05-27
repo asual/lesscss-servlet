@@ -202,9 +202,15 @@ public class ResourceServlet extends HttpServlet {
 			}
 			
 			response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
-			response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
-			response.setDateHeader("Last-Modified", lastModified);
-			response.setHeader("Cache-control", "max-age=" + maxAge);
+			if (cache) {
+    				response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
+	    			response.setDateHeader("Last-Modified", lastModified);
+	    			response.setHeader("Cache-control", "max-age=" + maxAge);
+			} else {
+        		        response.setDateHeader("Expires", System.currentTimeMillis());
+		                response.setDateHeader("Last-Modified", System.currentTimeMillis());
+		                response.setHeader("Cache-control", "max-age=0");
+			}
 			response.setContentLength(content.length);
 			response.getOutputStream().write(content);
 			response.getOutputStream().flush();
