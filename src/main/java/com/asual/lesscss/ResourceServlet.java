@@ -196,21 +196,20 @@ public class ResourceServlet extends HttpServlet {
 			
 			long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 			if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
-                logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
+				logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 				return;
 			}
 			
-			response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
 			if (cache) {
-    				response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
-	    			response.setDateHeader("Last-Modified", lastModified);
-	    			response.setHeader("Cache-control", "max-age=" + maxAge);
-			} else {
-        		        response.setDateHeader("Expires", System.currentTimeMillis());
-		                response.setDateHeader("Last-Modified", System.currentTimeMillis());
-		                response.setHeader("Cache-control", "max-age=0");
+				maxAge = 0;
 			}
+			
+			response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
+			response.setDateHeader("Last-Modified", lastModified);
+			response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
+			response.setHeader("Cache-control", "max-age=" + maxAge);
+			
 			response.setContentLength(content.length);
 			response.getOutputStream().write(content);
 			response.getOutputStream().flush();
