@@ -19,6 +19,7 @@ package com.asual.lesscss;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -190,7 +191,15 @@ public class ResourceServlet extends HttpServlet {
 			
 			for (String resource : uri) {
 				resource = resource.replaceAll("^" + request.getContextPath(), "");
-				content = mergeContent(content, getResourceContent(resource));
+				try {
+				    content = mergeContent(content, getResourceContent(resource));
+				} catch (FileNotFoundException e) {
+				    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				    return;
+				} catch (ResourceNotFoundException e) {
+				    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				    return;
+				}
 				lastModified = Math.max(lastModified, getResourceLastModified(resource));
 			}
 			
@@ -203,13 +212,13 @@ public class ResourceServlet extends HttpServlet {
 			
 			response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
 			if (cache) {
-    				response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
-	    			response.setDateHeader("Last-Modified", lastModified);
-	    			response.setHeader("Cache-control", "max-age=" + maxAge);
+				response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
+    			response.setDateHeader("Last-Modified", lastModified);
+    			response.setHeader("Cache-control", "max-age=" + maxAge);
 			} else {
-        		        response.setDateHeader("Expires", System.currentTimeMillis());
-		                response.setDateHeader("Last-Modified", System.currentTimeMillis());
-		                response.setHeader("Cache-control", "max-age=0");
+		        response.setDateHeader("Expires", System.currentTimeMillis());
+                response.setDateHeader("Last-Modified", System.currentTimeMillis());
+                response.setHeader("Cache-control", "max-age=0");
 			}
 			response.setContentLength(content.length);
 			response.getOutputStream().write(content);
