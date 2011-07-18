@@ -1,6 +1,4 @@
 /*
- * Copyright 2009-2010 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,9 +14,6 @@
 
 package com.asual.lesscss;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -30,6 +25,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Rostislav Hristov
@@ -44,7 +42,6 @@ public class ResourceServlet extends HttpServlet {
 	protected int maxAge = 31556926;
 	protected long milliseconds = 1000L;
 	protected String charset = "UTF-8";
-	protected String separator = ";";
 	protected Map<String, Resource> resources;
 	protected Map<String, String> mimeTypes = new HashMap<String, String>();
 	{
@@ -80,9 +77,6 @@ public class ResourceServlet extends HttpServlet {
 			if (getInitParameter("charset") != null) {
 				charset = getInitParameter("charset");
 			}
-			if (getInitParameter("separator") != null) {
-				separator = getInitParameter("separator");
-			}
 			if (getInitParameter("cache") != null) {
 				cache = Boolean.valueOf(getInitParameter("cache"));
 			}
@@ -100,9 +94,6 @@ public class ResourceServlet extends HttpServlet {
 		if (initialContext != null) {
 			if (getJndiParameter("Charset") != null) {
 				charset = (String) getJndiParameter("Charset");
-			}
-			if (getJndiParameter("Separator") != null) {
-				separator = (String) getJndiParameter("Separator");
 			}
 			if (getJndiParameter("Cache") != null) {
 				cache = (Boolean) getJndiParameter("Cache");
@@ -124,7 +115,6 @@ public class ResourceServlet extends HttpServlet {
 	}
 
 	protected Resource getResource(String uri) throws ResourceNotFoundException {
-		
 		String mimeType = getResourceMimeType(uri);
 		if (!resources.containsKey(uri)) {
 			if ("text/css".equals(mimeType)) {
@@ -139,26 +129,22 @@ public class ResourceServlet extends HttpServlet {
 	}
 	
 	protected byte[] getResourceContent(String uri) throws Exception {
-		
 		Resource resource = getResource(uri);
 		return resource.getContent();
 	}
 	
-	protected long getResourceLastModified(String uri) throws ResourceNotFoundException, IOException {
-		
+	protected long getResourceLastModified(String uri) throws IOException {		
 		Resource resource = getResource(uri);
 		return resource.getLastModified();
 	}
 	
 	protected String getResourceMimeType(String uri) {
-		
 		String extension = uri.substring(uri.lastIndexOf(".") + 1);
 		String mimeType = mimeTypes.containsKey(extension) ? mimeTypes.get(extension) : getServletContext().getMimeType(uri);
 		return mimeType != null ? mimeType : "application/octet-stream";
 	}
 	
 	protected byte[] mergeContent(byte[] c1, byte[] c2) throws UnsupportedEncodingException {
-		
 		byte[] line = "\n".getBytes(charset);
 		int l1 = c1.length;
 		int l2 = l1 != 0 ? line.length : 0;
@@ -181,8 +167,8 @@ public class ResourceServlet extends HttpServlet {
 
 		try {
 			
-			String pkg = request.getParameter("pack");
-			String[] uri = (pkg != null) ? pkg.split(separator) : new String[] {request.getRequestURI().replaceAll("/+", "/")};
+			ResourcePackage rp = ResourcePackage.fromString(request.getPathInfo());
+			String[] uri = (rp != null) ? rp.getResources() : new String[] {request.getRequestURI().replaceAll("/+", "/")};
 			String mimeType = getResourceMimeType(uri[0]);
 			
 			long lastModified = 0;
@@ -190,13 +176,19 @@ public class ResourceServlet extends HttpServlet {
 			
 			for (String resource : uri) {
 				resource = resource.replaceAll("^" + request.getContextPath(), "");
-				content = mergeContent(content, getResourceContent(resource));
+				try {
+					content = mergeContent(content, getResourceContent(resource));
+				} catch (IOException e) {
+					logger.error("Cannot find " + resource + ".");
+					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+					return;
+				}
 				lastModified = Math.max(lastModified, getResourceLastModified(resource));
 			}
 			
 			long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 			if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
-                logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
+				logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 				return;
 			}

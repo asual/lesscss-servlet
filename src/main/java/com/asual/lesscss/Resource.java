@@ -1,6 +1,4 @@
 /*
- * Copyright 2009-2010 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -69,16 +67,16 @@ public class Resource {
 
 	public long getLastModified() throws IOException {
 		if (lastModified == null || !cache) {
-            if (resource instanceof URL) {
-                lastModified = ((URL) resource).openConnection().getLastModified();
-                logger.debug("getLastModified(), URL resource: " + lastModified + " - for resource: " + resource);
-            }
-            else {
-                lastModified = ((File) resource).lastModified();
-                logger.debug("getLastModified(), File resource: " + lastModified + " - for resource: " + resource);
-            }
+			if (resource instanceof URL) {
+				lastModified = ((URL) resource).openConnection().getLastModified();
+				logger.debug("getLastModified(), URL resource: " + lastModified + " - for resource: " + resource);
+			}
+			else {
+				lastModified = ((File) resource).lastModified();
+				logger.debug("getLastModified(), File resource: " + lastModified + " - for resource: " + resource);
+			}
 		}
-        logger.debug("getLastModified(): " + lastModified);
+		logger.debug("getLastModified(): " + lastModified);
 		return lastModified;
 	}
 	

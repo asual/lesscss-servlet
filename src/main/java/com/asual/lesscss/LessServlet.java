@@ -1,6 +1,4 @@
 /*
- * Copyright 2009-2010 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,7 +24,7 @@ public class LessServlet extends ResourceServlet {
 
 	private static final long serialVersionUID = 413708886190444579L;
 	private LessEngine engine;
-    private final Log logger = LogFactory.getLog(getClass());
+	private final Log logger = LogFactory.getLog(getClass());
 	
 	public void init() {
 		super.init();
@@ -36,7 +34,7 @@ public class LessServlet extends ResourceServlet {
 	protected Resource getResource(String uri) throws ResourceNotFoundException {
 		String mimeType = getResourceMimeType(uri);
 		if (!resources.containsKey(uri)) {
-            logger.debug("Using new LessResource for uri " + uri);
+			logger.debug("Using new LessResource for uri " + uri);
 			if ("text/css".equals(mimeType)) {
 				resources.put(uri, new LessResource(engine, getServletContext(), uri, charset, cache, compress));
 				return resources.get(uri);
@@ -44,7 +42,7 @@ public class LessServlet extends ResourceServlet {
 				return super.getResource(uri);
 			}
 		} else {
-            logger.debug("Using existing LessResource for uri " + uri);
+			logger.debug("Using existing LessResource for uri " + uri);
 			return resources.get(uri);
 		}
 	}

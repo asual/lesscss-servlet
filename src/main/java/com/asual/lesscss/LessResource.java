@@ -1,6 +1,4 @@
 /*
- * Copyright 2009-2010 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,24 +39,24 @@ public class LessResource extends StyleResource {
 	
 	public byte[] getContent() throws LessException, IOException {
 		if (content == null || (!cache && lastModified < getLastModified())) {
-            logger.debug("Not using cache.");
+			logger.debug("Not using cache.");
 			if (engine != null) {
-                logger.debug("LessEngine available, compiling.");
+				logger.debug("LessEngine available, compiling.");
 				content = (resource instanceof URL ? 
 						engine.compile((URL) resource) : engine.compile((File) resource))
 						.replaceAll("\\\\n", "\n").getBytes(charset);
 			} else {
-                logger.debug("LessEngine not available, treating as regular resource.");
+				logger.debug("LessEngine not available, treating as regular resource.");
 				content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
 			}
 			lastModified = getLastModified();
 			if (compress) {
-                logger.debug("Compressing resource.");
+				logger.debug("Compressing resource.");
 				compress();
 			}
 		} else {
-            logger.debug("Using cache, since lastModified: " + lastModified + " and getLastModified: " + getLastModified());
-        }
+			logger.debug("Using cache, since lastModified: " + lastModified + " and getLastModified: " + getLastModified());
+		}
 		return content;
 	}
 
@@ -81,7 +79,7 @@ public class LessResource extends StyleResource {
 				}
 			}
 		}
-        logger.debug("getLastModified() in LessResource: " + lastModified);
+		logger.debug("getLastModified() in LessResource: " + lastModified);
 		return lastModified;
 	}
 	
