@@ -31,12 +31,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ResourcePackage {
 	
-	private static int VERSION_FLAG = 1;
-	private static int NAME_FLAG = 2;
+	private static int NAME_FLAG = 1;
+	private static int VERSION_FLAG = 2;
 	private static int DEFLATE = 32;
 	private static String ENCODING = "UTF-8";
 	private static String NEW_LINE = "\n";
-	private static String SEPARATOR = "/";
+	private static String SEPARATOR = "-";
 	
 	private final Log logger = LogFactory.getLog(getClass());
 	
@@ -61,7 +61,7 @@ public class ResourcePackage {
 				source = source.substring(0, dotIndex);
 			}
 			
-			String[] parts = source.split("/");
+			String[] parts = source.replaceFirst("^/", "").split(SEPARATOR);
 			try {
 				byte[] output = parts[parts.length - 1].getBytes(ENCODING);
 				try {
@@ -72,11 +72,11 @@ public class ResourcePackage {
 				String[] data = new String(output, ENCODING).split(NEW_LINE);
 				ResourcePackage vp = new ResourcePackage((String[]) ArrayUtils.subarray(data, 1, data.length));
 				int mask = Integer.valueOf(data[0]);
-				if ((mask & VERSION_FLAG) != 0) {
-					vp.setVersion(parts[1]);
-				}
 				if ((mask & NAME_FLAG) != 0) {
-					vp.setName(parts[vp.getVersion() != null ? NAME_FLAG : VERSION_FLAG]);
+					vp.setName(parts[0]);
+				}
+				if ((mask & VERSION_FLAG) != 0) {
+					vp.setVersion(parts[vp.getName() != null ? 1 : 0]);
 				}
 				vp.setExtension(extension);
 				return vp;
@@ -88,18 +88,18 @@ public class ResourcePackage {
 	public String toString() {
 		try {
 			int mask = 0;
-			if (version != null) {
-				mask = mask | VERSION_FLAG;
-			}
 			if (name != null) {
 				mask = mask | NAME_FLAG;
 			}
+			if (version != null) {
+				mask = mask | VERSION_FLAG;
+			}
 			byte[] bytes = (mask + NEW_LINE + StringUtils.join(resources, NEW_LINE)).getBytes(ENCODING);
 			StringBuilder sb = new StringBuilder();
-			sb.append(SEPARATOR);
+			sb.append("/");
+			sb.append(name == null ? "" : name + SEPARATOR);
 			sb.append(version == null ? "" : version + SEPARATOR);
-			sb.append(name == null ? "" : name + SEPARATOR);			
-			sb.append(Base64.encodeBase64URLSafeString(bytes.length < DEFLATE ? bytes : deflate(bytes)));
+			sb.append(Base64.encodeBase64URLSafeString(bytes.length < DEFLATE ? bytes : deflate(bytes)).replaceAll("-", "+"));
 			sb.append(extension == null ? "" : "." + extension);
 			return sb.toString();
 		} catch (Exception e) {
