@@ -46,7 +46,7 @@ public class ResourceServletTest  {
 		request.setMethod("GET");
 		request.setHeader("Host", "tester");
 		request.setVersion("HTTP/1.1");
-		request.setURI("/logo.png");
+		request.setURI("/img/logo.png");
 		HttpTester response = new HttpTester();
 		response.parse(tester.getResponses(request.generate()));
 		assertEquals("image/png", response.getContentType());
@@ -55,7 +55,7 @@ public class ResourceServletTest  {
 	
 	@Test
 	public void js() throws Exception {
-		ResourcePackage rp = new ResourcePackage(new String[] {"/test1.js", "/test2.js"});
+		ResourcePackage rp = new ResourcePackage(new String[] {"/js/test1.js", "/js/test2.js"});
 		HttpTester request = new HttpTester();
 		request.setMethod("GET");
 		request.setHeader("Host", "tester");
@@ -78,7 +78,8 @@ public class ResourceServletTest  {
 	@Test
 	public void pack() throws Exception {
 		String name = "test";
-		String[] resources = new String[] {"/test1.js", "/test2.js", "/test3.js", "/test4.js", "/test5.js"};
+		String[] resources = new String[] {
+				"/js/test1.js", "/js/test2.js", "/js/test3.js", "/js/test4.js", "/js/test5.js"};
 		String version = "1.1.3";
 		ResourcePackage rp = new ResourcePackage(resources);
 		rp.setName(name);

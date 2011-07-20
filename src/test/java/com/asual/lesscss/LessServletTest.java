@@ -46,7 +46,7 @@ public class LessServletTest  {
 		request.setMethod("GET");
 		request.setHeader("Host", "tester");
 		request.setVersion("HTTP/1.1");
-		request.setURI("/test.css");
+		request.setURI("/css/test.css");
 		HttpTester response = new HttpTester();
 		response.parse(tester.getResponses(request.generate()));
 		assertEquals("body{color:#f0f0f0;}", response.getContent());
