@@ -16,6 +16,8 @@ package com.asual.lesscss;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -31,14 +33,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ResourcePackage {
 	
+	private final static Map<String, String> cache = new ConcurrentHashMap<String, String>();
+	private final static Log logger = LogFactory.getLog(ResourcePackage.class);
+	
 	private static int NAME_FLAG = 1;
 	private static int VERSION_FLAG = 2;
 	private static int DEFLATE = 32;
 	private static String ENCODING = "UTF-8";
 	private static String NEW_LINE = "\n";
 	private static String SEPARATOR = "-";
-	
-	private final Log logger = LogFactory.getLog(getClass());
 	
 	private String[] resources;
 	private String version;
@@ -50,37 +53,45 @@ public class ResourcePackage {
 	}
 	
 	public static ResourcePackage fromString(String source) {
-		
 		if (!StringUtils.isEmpty(source)) {
-			
-			String extension = null;
-			int slashIndex = source.lastIndexOf("/");
-			int dotIndex = source.lastIndexOf(".");
-			if (dotIndex != -1 && slashIndex < dotIndex) {
-				extension = source.substring(dotIndex);
-				source = source.substring(0, dotIndex);
-			}
-			
-			String[] parts = source.replaceFirst("^/", "").split(SEPARATOR);
 			try {
-				byte[] output = parts[parts.length - 1].getBytes(ENCODING);
-				try {
-					output = inflate(Base64.decodeBase64(output));
-				} catch (Exception e) {
-					output = Base64.decodeBase64(output);
+				String key;
+				String path = null;
+				String extension = null;
+				int slashIndex = source.lastIndexOf("/");
+				int dotIndex = source.lastIndexOf(".");
+				if (dotIndex != -1 && slashIndex < dotIndex) {
+					extension = source.substring(dotIndex);
+					path = source.substring(0, dotIndex);
+				} else {
+					path = source;
 				}
-				String[] data = new String(output, ENCODING).split(NEW_LINE);
-				ResourcePackage vp = new ResourcePackage((String[]) ArrayUtils.subarray(data, 1, data.length));
+				String[] parts = path.replaceFirst("^/", "").split(SEPARATOR);
+				if (cache.containsValue(source)) {
+					key = getKeyFromValue(cache, source);
+				} else {
+					key = parts[parts.length - 1];
+					byte[] bytes = null;
+					try {
+						bytes = Base64.decodeBase64(key.getBytes(ENCODING));
+						bytes = inflate(bytes);
+					} catch (Exception e) {}
+					key = new String(bytes, ENCODING);
+				}
+				String[] data = key.split(NEW_LINE);
+				ResourcePackage rp = new ResourcePackage((String[]) ArrayUtils.subarray(data, 1, data.length));
 				int mask = Integer.valueOf(data[0]);
 				if ((mask & NAME_FLAG) != 0) {
-					vp.setName(parts[0]);
+					rp.setName(parts[0]);
 				}
 				if ((mask & VERSION_FLAG) != 0) {
-					vp.setVersion(parts[vp.getName() != null ? 1 : 0]);
+					rp.setVersion(parts[rp.getName() != null ? 1 : 0]);
 				}
-				vp.setExtension(extension);
-				return vp;
-			} catch (Exception e) {}
+				rp.setExtension(extension);
+				return rp;
+			} catch (Exception e) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -94,14 +105,18 @@ public class ResourcePackage {
 			if (version != null) {
 				mask = mask | VERSION_FLAG;
 			}
-			byte[] bytes = (mask + NEW_LINE + StringUtils.join(resources, NEW_LINE)).getBytes(ENCODING);
-			StringBuilder sb = new StringBuilder();
-			sb.append("/");
-			sb.append(name == null ? "" : name + SEPARATOR);
-			sb.append(version == null ? "" : version + SEPARATOR);
-			sb.append(Base64.encodeBase64URLSafeString(bytes.length < DEFLATE ? bytes : deflate(bytes)).replaceAll("-", "+"));
-			sb.append(extension == null ? "" : "." + extension);
-			return sb.toString();
+			String key = mask + NEW_LINE + StringUtils.join(resources, NEW_LINE);
+			if (!cache.containsKey(key)) {
+				byte[] bytes = key.getBytes(ENCODING);
+				StringBuilder sb = new StringBuilder();
+				sb.append("/");
+				sb.append(name == null ? "" : name + SEPARATOR);
+				sb.append(version == null ? "" : version + SEPARATOR);
+				sb.append(Base64.encodeBase64URLSafeString(bytes.length < DEFLATE ? bytes : deflate(bytes)).replaceAll("-", "+"));
+				sb.append(extension == null ? "" : "." + extension);
+				cache.put(key, sb.toString());
+			}
+			return cache.get(key);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -135,7 +150,16 @@ public class ResourcePackage {
 	public String[] getResources() {
 		return resources;
 	}
-
+	
+	public static <K,V> K getKeyFromValue(Map<K,V> m, V value) {
+		for (K o : m.keySet()){
+			if (m.get(o).equals(value)) {
+				return o;
+			}
+		}
+		return null;
+	}
+	
 	private static byte[] deflate(byte[] input) throws IOException {
 		Deflater deflater = new Deflater();
 		deflater.setLevel(Deflater.BEST_COMPRESSION);
