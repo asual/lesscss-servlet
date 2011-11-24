@@ -18,19 +18,22 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
-
-import com.yahoo.platform.yui.compressor.JavaScriptCompressor;
+import com.google.javascript.jscomp.CompilationLevel;
+import com.google.javascript.jscomp.Compiler;
+import com.google.javascript.jscomp.CompilerOptions;
+import com.google.javascript.jscomp.JSSourceFile;
+import com.google.javascript.jscomp.Result;
 
 /**
  * @author Rostislav Hristov
@@ -57,33 +60,26 @@ public class ScriptResource extends Resource {
 	
 	private void compress() throws UnsupportedEncodingException, IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Reader in = new InputStreamReader(
-				new ByteArrayInputStream(
-						(new String(content, charset))
-							.replaceFirst("^/\\*", "/*!")
-							.getBytes(charset)), 
-							charset);
+		InputStream is = new ByteArrayInputStream(content);
 		Writer out = new OutputStreamWriter(baos, charset);
-		JavaScriptCompressor compressor = new JavaScriptCompressor(in, new ErrorReporter() {
-			public void warning(String message, String sourceName,
-					int line, String lineSource, int lineOffset) {
-				logger.error("Message: " + message + (lineSource != null ? ", Line: " + line + ", Column: " + lineOffset + ", Source: " + lineSource : "") + ".");
+	    CompilerOptions options = new CompilerOptions();
+		CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
+		Compiler.setLoggingLevel(Level.OFF);
+		Compiler compiler = new Compiler();
+		compiler.disableThreads();
+		Result result = compiler.compile(new JSSourceFile[] {}, 
+				new JSSourceFile[] { JSSourceFile.fromInputStream("is", is) }, options);
+		if (result.success) {
+			Pattern pattern = Pattern.compile("^/\\*.*?\\*/\\s?", Pattern.DOTALL);
+			Matcher matcher = pattern.matcher(new String(content, charset));
+			while (matcher.find()) {
+				out.write(matcher.group());
 			}
-			public void error(String message, String sourceName,
-					int line, String lineSource, int lineOffset) {
-				logger.error("Message: " + message + (lineSource != null ? ", Line: " + line + ", Column: " + lineOffset + ", Source: " + lineSource : "") + ".");
-			}
-			public EvaluatorException runtimeError(String message, String sourceName,
-					int line, String lineSource, int lineOffset) {
-				error(message, sourceName, line, lineSource, lineOffset);
-				return new EvaluatorException(message);
-			}
-		});
-		in.close();
-		compressor.compress(out, -1, true, false, true, false);
-		out.flush();
-		content = baos.toByteArray();
+			out.write(compiler.toSource());
+			out.flush();
+			content = baos.toByteArray();
+		}
+		is.close();
 		out.close();
 	}
-	
 }

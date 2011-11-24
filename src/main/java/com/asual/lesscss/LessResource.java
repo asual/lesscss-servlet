@@ -29,6 +29,7 @@ import javax.servlet.ServletContext;
  * @author Rostislav Hristov
  */
 public class LessResource extends StyleResource {
+	
 	private final Log logger = LogFactory.getLog(getClass());
 	private LessEngine engine;
 	

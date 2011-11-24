@@ -67,12 +67,12 @@ public class ResourceServletTest  {
 		sb.append("/*\n");
 		sb.append(" * License and copyright 1\n");
 		sb.append(" */\n");
-		sb.append("var test1=1;(function(){var A=1;A=2;return A;})();\n");
+		sb.append("var test1=1;(function(){var a=1;return 2})();\n");
 		sb.append("/*\n");
 		sb.append(" * License and copyright 2\n");
 		sb.append(" */\n");
 		sb.append("var test2=2;");
-		assertEquals(sb.toString(), response.getContent());
+		assertEquals(sb.toString(), response.getContent().replaceAll(System.getProperty("line.separator"), "\n"));
 	}
 	
 	@Test

@@ -49,7 +49,7 @@ public class LessServletTest  {
 		request.setURI("/css/test.css");
 		HttpTester response = new HttpTester();
 		response.parse(tester.getResponses(request.generate()));
-		assertEquals("body{color:#f0f0f0;}", response.getContent());
+		assertEquals("body{color:#f0f0f0}", response.getContent());
 	}
 	
 	@AfterClass

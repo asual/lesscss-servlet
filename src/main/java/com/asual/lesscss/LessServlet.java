@@ -28,7 +28,9 @@ public class LessServlet extends ResourceServlet {
 	
 	public void init() {
 		super.init();
-		engine = new LessEngine();
+		LessOptions options = new LessOptions();
+		options.setCss(true);
+		engine = new LessEngine(options);
 	}
 
 	protected Resource getResource(String uri) throws ResourceNotFoundException {
