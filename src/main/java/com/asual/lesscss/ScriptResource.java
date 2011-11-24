@@ -62,13 +62,13 @@ public class ScriptResource extends Resource {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		InputStream is = new ByteArrayInputStream(content);
 		Writer out = new OutputStreamWriter(baos, charset);
-	    CompilerOptions options = new CompilerOptions();
+		CompilerOptions options = new CompilerOptions();
 		CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
 		Compiler.setLoggingLevel(Level.OFF);
 		Compiler compiler = new Compiler();
 		compiler.disableThreads();
 		Result result = compiler.compile(new JSSourceFile[] {}, 
-				new JSSourceFile[] { JSSourceFile.fromInputStream("is", is) }, options);
+			new JSSourceFile[] { JSSourceFile.fromInputStream("is", is) }, options);
 		if (result.success) {
 			Pattern pattern = Pattern.compile("^/\\*.*?\\*/\\s?", Pattern.DOTALL);
 			Matcher matcher = pattern.matcher(new String(content, charset));
