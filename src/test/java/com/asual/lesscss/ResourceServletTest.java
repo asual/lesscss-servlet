@@ -14,7 +14,6 @@
 
 package com.asual.lesscss;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import org.eclipse.jetty.testing.HttpTester;
@@ -73,28 +72,6 @@ public class ResourceServletTest  {
 		sb.append(" */\n");
 		sb.append("var test2=2;");
 		assertEquals(sb.toString(), response.getContent().replaceAll(System.getProperty("line.separator"), "\n"));
-	}
-	
-	@Test
-	public void pack() throws Exception {
-		String name = "test";
-		String[] resources = new String[] {
-				"/js/test1.js", "/js/test2.js", "/js/test3.js", "/js/test4.js", "/js/test5.js"};
-		String version = "1.1.3";
-		ResourcePackage rp = new ResourcePackage(resources);
-		rp.setName(name);
-		rp.setVersion(version);
-		rp.setExtension("js");
-		rp = ResourcePackage.fromString(rp.toString());
-		assertEquals(name, rp.getName());
-		assertArrayEquals(resources, rp.getResources());
-		assertEquals(version, rp.getVersion());		
-		rp = new ResourcePackage(resources);
-		rp.setVersion(version);
-		rp.setExtension("js");
-		rp = ResourcePackage.fromString(rp.toString());
-		assertEquals(null, rp.getName());
-		assertEquals(version, rp.getVersion());
 	}
 	
 	@AfterClass

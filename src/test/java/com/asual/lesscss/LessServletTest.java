@@ -36,7 +36,7 @@ public class LessServletTest  {
 		tester = new ServletTester();
 		tester.setClassLoader(LessServletTest.class.getClassLoader());
 		tester.setContextPath("/");
-		tester.addServlet(LessServlet.class, "*.css");
+		tester.addServlet(LessServlet.class, "*.css").setInitParameter("css", "true");
 		tester.start();
 	}
   
