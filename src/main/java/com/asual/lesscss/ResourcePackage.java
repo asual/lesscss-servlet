@@ -16,6 +16,8 @@ package com.asual.lesscss;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.DataFormatException;
@@ -35,6 +37,7 @@ public class ResourcePackage {
 	
 	private final static Map<String, String> cache = new ConcurrentHashMap<String, String>();
 	private final static Log logger = LogFactory.getLog(ResourcePackage.class);
+	private final static List<String> extensions = Arrays.asList("css", "less", "js");
 	
 	private static int NAME_FLAG = 1;
 	private static int VERSION_FLAG = 2;
@@ -61,10 +64,13 @@ public class ResourcePackage {
 				int slashIndex = source.lastIndexOf("/");
 				int dotIndex = source.lastIndexOf(".");
 				if (dotIndex != -1 && slashIndex < dotIndex) {
-					extension = source.substring(dotIndex);
+					extension = source.substring(dotIndex + 1);
 					path = source.substring(0, dotIndex);
 				} else {
 					path = source;
+				}
+				if (extension != null && !extensions.contains(extension)) {
+					return null;
 				}
 				String[] parts = path.replaceFirst("^/", "").split(SEPARATOR);
 				if (cache.containsValue(source)) {
@@ -90,7 +96,6 @@ public class ResourcePackage {
 				rp.setExtension(extension);
 				return rp;
 			} catch (Exception e) {
-				return null;
 			}
 		}
 		return null;
@@ -98,6 +103,9 @@ public class ResourcePackage {
 	
 	public String toString() {
 		try {
+			if (extension != null && !extensions.contains(extension)) {
+				throw new Exception("Unsupported extension: " + extension);
+			}
 			int mask = 0;
 			if (name != null) {
 				mask = mask | NAME_FLAG;
