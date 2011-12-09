@@ -14,6 +14,8 @@
 
 package com.asual.lesscss;
 
+import javax.naming.NamingException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -23,13 +25,48 @@ import org.apache.commons.logging.LogFactory;
 public class LessServlet extends ResourceServlet {
 
 	private static final long serialVersionUID = 413708886190444579L;
-	private LessEngine engine;
 	private final Log logger = LogFactory.getLog(getClass());
+
+	protected LessEngine engine;
+	protected boolean css = false;
 	
 	public void init() {
-		super.init();
+		if (getServletConfig() != null) {
+			if (getInitParameter("charset") != null) {
+				charset = getInitParameter("charset");
+			}
+			if (getInitParameter("cache") != null) {
+				cache = Boolean.valueOf(getInitParameter("cache"));
+			}
+			if (getInitParameter("compress") != null) {
+				compress = Boolean.valueOf(getInitParameter("compress"));
+			}
+			if (getInitParameter("css") != null) {
+				css = Boolean.valueOf(getInitParameter("css"));
+			}
+		}
+		try {
+			initialContext = new javax.naming.InitialContext();
+		} catch (NamingException e) {
+		} catch (NoClassDefFoundError e) {
+		}
+		if (initialContext != null) {
+			if (getJndiParameter("/less/Charset") != null) {
+				charset = (String) getJndiParameter("/less/Charset");
+			}
+			if (getJndiParameter("/less/Cache") != null) {
+				cache = (Boolean) getJndiParameter("/less/Cache");
+			}
+			if (getJndiParameter("/less/Compress") != null) {
+				compress = (Boolean) getJndiParameter("/less/Compress");
+			}
+			if (getJndiParameter("/less/Css") != null) {
+				css = (Boolean) getJndiParameter("/less/Css");
+			}
+		}
 		LessOptions options = new LessOptions();
-		options.setCss(true);
+		options.setCharset(charset);
+		options.setCss(css);
 		engine = new LessEngine(options);
 	}
 
@@ -48,5 +85,4 @@ public class LessServlet extends ResourceServlet {
 			return resources.get(uri);
 		}
 	}
-	
 }

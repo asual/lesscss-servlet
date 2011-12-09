@@ -37,12 +37,12 @@ public class ResourceServlet extends HttpServlet {
 	private static final long serialVersionUID = 413708886190444579L;
 	private final Log logger = LogFactory.getLog(getClass());
 	protected Context initialContext = null;
+	protected String charset = "UTF-8";
 	protected boolean cache = true;
 	protected boolean compress = true;
 	protected int maxAge = 31556926;
 	protected long milliseconds = 1000L;
-	protected String charset = "UTF-8";
-	protected Map<String, Resource> resources;
+	protected Map<String, Resource> resources = new HashMap<String, Resource>();
 	protected Map<String, String> mimeTypes = new HashMap<String, String>();
 	{
 		mimeTypes.put("css", "text/css");
@@ -72,7 +72,6 @@ public class ResourceServlet extends HttpServlet {
 	}
 	
 	public void init() {
-		
 		if (getServletConfig() != null) {
 			if (getInitParameter("charset") != null) {
 				charset = getInitParameter("charset");
@@ -84,31 +83,27 @@ public class ResourceServlet extends HttpServlet {
 				compress = Boolean.valueOf(getInitParameter("compress"));
 			}
 		}
-
 		try {
 			initialContext = new javax.naming.InitialContext();
 		} catch (NamingException e) {
 		} catch (NoClassDefFoundError e) {
 		}
-		
 		if (initialContext != null) {
-			if (getJndiParameter("Charset") != null) {
-				charset = (String) getJndiParameter("Charset");
+			if (getJndiParameter("/resource/Charset") != null) {
+				charset = (String) getJndiParameter("/resource/Charset");
 			}
-			if (getJndiParameter("Cache") != null) {
-				cache = (Boolean) getJndiParameter("Cache");
+			if (getJndiParameter("/resource/Cache") != null) {
+				cache = (Boolean) getJndiParameter("/resource/Cache");
 			}
-			if (getJndiParameter("Compress") != null) {
-				compress = (Boolean) getJndiParameter("Compress");
+			if (getJndiParameter("/resource/Compress") != null) {
+				compress = (Boolean) getJndiParameter("/resource/Compress");
 			}
 		}
-		
-		resources = new HashMap<String, Resource>();
 	}
 	
 	protected Object getJndiParameter(String name) {
 		try {
-			return initialContext.lookup("java:comp/env/resource/" + name);
+			return initialContext.lookup("java:comp/env" + name);
 		} catch (NamingException ne) {
 		}
 		return null;
@@ -164,16 +159,12 @@ public class ResourceServlet extends HttpServlet {
 	}
 
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-
 		try {
-			
 			ResourcePackage rp = ResourcePackage.fromString(request.getPathInfo());
 			String[] uri = (rp != null) ? rp.getResources() : new String[] {request.getRequestURI().replaceAll("/+", "/")};
 			String mimeType = getResourceMimeType(uri[0]);
-			
 			long lastModified = 0;
 			byte[] content = new byte[0];
-			
 			for (String resource : uri) {
 				resource = resource.replaceAll("^" + request.getContextPath(), "");
 				try {
@@ -185,28 +176,23 @@ public class ResourceServlet extends HttpServlet {
 				}
 				lastModified = Math.max(lastModified, getResourceLastModified(resource));
 			}
-			
 			long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 			if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
 				logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 				return;
 			}
-			
 			if (cache) {
 				maxAge = 0;
 			}
-			
 			response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
 			response.setDateHeader("Last-Modified", lastModified);
 			response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
 			response.setHeader("Cache-control", "max-age=" + maxAge);
-			
 			response.setContentLength(content.length);
 			response.getOutputStream().write(content);
 			response.getOutputStream().flush();
 			response.getOutputStream().close();
-			
 		} catch (Exception e) {
 			throw new ServletException(e.getMessage(), e);
 		}
