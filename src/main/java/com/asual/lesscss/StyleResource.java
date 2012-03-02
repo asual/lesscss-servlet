@@ -14,19 +14,17 @@
 
 package com.asual.lesscss;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.URL;
 
 import javax.servlet.ServletContext;
 
-import com.yahoo.platform.yui.compressor.CssCompressor;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.tools.shell.Global;
 
 /**
  * @author Rostislav Hristov
@@ -52,20 +50,22 @@ public class StyleResource extends Resource {
 	}
 	
 	protected void compress() throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Reader in = new InputStreamReader(
-				new ByteArrayInputStream(
-						(new String(content, charset))
-							.replaceFirst("^/\\*", "/*!")
-							.getBytes(charset)), 
-							charset);
-		Writer out = new OutputStreamWriter(baos, charset);
-		CssCompressor compressor = new CssCompressor(in);
-		in.close();
-		compressor.compress(out, -1);
-		out.flush();
-		content = baos.toByteArray();
-		out.close();
+		long time = System.currentTimeMillis();
+		URL cssmin = getClass().getClassLoader().getResource("META-INF/cssmin.js");
+		Context cx = Context.enter();
+		cx.setOptimizationLevel(9);
+		Global global = new Global();
+		global.init(cx);
+		Scriptable scope = cx.initStandardObjects(global);
+		cx.evaluateString(scope, "var exports = {};", "exports", 1, null);
+		cx.evaluateReader(scope, new InputStreamReader(cssmin.openConnection().getInputStream()), cssmin.getFile(), 1, null);
+		Scriptable exports = (Scriptable) scope.get("exports", scope);
+		Scriptable compressor = (Scriptable) exports.get("compressor", exports);
+		Function fn = (Function) compressor.get("cssmin", compressor);
+		content = ((String) Context.call(null, fn, compressor, compressor, new Object[] {
+				new String(content, charset).replaceFirst("^/\\*", "/*!")})).getBytes(charset);
+		Context.exit();
+		System.out.println("!!!!" + (System.currentTimeMillis() - time));
 	}
 	
 }

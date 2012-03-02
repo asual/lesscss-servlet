@@ -6,7 +6,7 @@
 	<artifactId>lesscss-servlet</artifactId>
 	<packaging>jar</packaging>
 	<name>LESS Servlet</name>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.3-SNAPSHOT</version>
 	<description>A Servlet wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
 	<url>http://www.asual.com/lesscss</url>
 	
@@ -72,17 +72,6 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>com.yahoo.platform.yui</groupId>
-			<artifactId>yuicompressor</artifactId>
-			<version>2.4.6</version>
-			<exclusions>
-				<exclusion>
-					<groupId>rhino</groupId>
-					<artifactId>js</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.google.javascript</groupId>
