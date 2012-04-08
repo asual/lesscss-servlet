@@ -50,7 +50,6 @@ public class StyleResource extends Resource {
 	}
 	
 	protected void compress() throws IOException {
-		long time = System.currentTimeMillis();
 		URL cssmin = getClass().getClassLoader().getResource("META-INF/cssmin.js");
 		Context cx = Context.enter();
 		cx.setOptimizationLevel(9);
@@ -65,7 +64,6 @@ public class StyleResource extends Resource {
 		content = ((String) Context.call(null, fn, compressor, compressor, new Object[] {
 				new String(content, charset).replaceFirst("^/\\*", "/*!")})).getBytes(charset);
 		Context.exit();
-		System.out.println("!!!!" + (System.currentTimeMillis() - time));
 	}
 	
 }

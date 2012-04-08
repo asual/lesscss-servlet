@@ -66,7 +66,7 @@ public class ResourceServletTest  {
 		sb.append("/*\n");
 		sb.append(" * License and copyright 1\n");
 		sb.append(" */\n");
-		sb.append("var test1=1;(function(){var a=1;return 2})();\n");
+		sb.append("var test1=1;(function(){return 2})();\n");
 		sb.append("/*\n");
 		sb.append(" * License and copyright 2\n");
 		sb.append(" */\n");
