@@ -49,13 +49,5 @@ public class ResourcePackageTest  {
 		assertEquals(name, rp.getName());
 		assertArrayEquals(resources, rp.getResources());
 		assertEquals(version, rp.getVersion());
-		/*
-		rp = new ResourcePackage(resources);
-		rp.setVersion(version);
-		rp.setExtension("js");
-		rp = ResourcePackage.fromString(rp.toString());
-		assertEquals(null, rp.getName());
-		assertEquals(version, rp.getVersion());
-		*/
 	}
 }
