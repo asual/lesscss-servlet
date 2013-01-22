@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.asual.lesscss</groupId>
 	<artifactId>lesscss-servlet</artifactId>
-	<version>1.3.3-SNAPSHOT</version>
+	<version>1.3.3</version>
 	<packaging>jar</packaging>
 	<name>LESS Servlet</name>
 	<description>A Servlet wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
@@ -22,7 +22,8 @@
 		<url>http://github.com/asual/lesscss-servlet</url>
 		<connection>scm:git:git://github.com:asual/lesscss-servlet.git</connection>
 		<developerConnection>scm:git:git@github.com:asual/lesscss-servlet.git</developerConnection>
-	</scm>
+	  <tag>lesscss-servlet-1.3.3</tag>
+  </scm>
 	
 	<developers>
 		<developer>
@@ -57,7 +58,7 @@
 		<dependency>
 			<groupId>com.asual.lesscss</groupId>
 			<artifactId>lesscss-engine</artifactId>
-			<version>1.3.3-SNAPSHOT</version>
+			<version>1.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
