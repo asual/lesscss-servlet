@@ -161,7 +161,7 @@ public class ResourceServlet extends HttpServlet {
 	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 		try {
 			ResourcePackage rp = ResourcePackage.fromString(request.getPathInfo());
-			String[] uri = (rp != null) ? rp.getResources() : new String[] {request.getRequestURI().replaceAll("/+", "/")};
+			String[] uri = (rp != null) ? rp.getResources() : new String[] {(request.getContextPath() + request.getServletPath() + (request.getServletPath() == null ? "" : request.getPathInfo()))}
 			String mimeType = getResourceMimeType(uri[0]);
 			long lastModified = 0;
 			byte[] content = new byte[0];
