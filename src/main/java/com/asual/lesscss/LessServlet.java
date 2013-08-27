@@ -28,7 +28,8 @@ public class LessServlet extends ResourceServlet {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	protected LessEngine engine;
-	protected boolean css = false;
+	protected boolean css;
+	protected String lineNumbers;
 
 	public void init() {
 		if (getServletConfig() != null) {
@@ -43,6 +44,9 @@ public class LessServlet extends ResourceServlet {
 			}
 			if (getInitParameter("css") != null) {
 				css = Boolean.valueOf(getInitParameter("css"));
+			}
+			if (getInitParameter("lineNumbers") != null) {
+				lineNumbers = getInitParameter("lineNumbers");
 			}
 		}
 		try {
@@ -63,10 +67,14 @@ public class LessServlet extends ResourceServlet {
 			if (getJndiParameter("/less/Css") != null) {
 				css = (Boolean) getJndiParameter("/less/Css");
 			}
+			if (getJndiParameter("/less/LineNumbers") != null) {
+				lineNumbers = (String) getJndiParameter("/less/LineNumbers");
+			}
 		}
 		LessOptions options = new LessOptions();
 		options.setCharset(charset);
 		options.setCss(css);
+		options.setLineNumbers(lineNumbers);
 		engine = new LessEngine(options);
 	}
 
