@@ -182,6 +182,7 @@ public class ResourceServlet extends HttpServlet {
 			long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 			if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
 				logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
+				response.setHeader("Cache-control", "max-age=" + maxAge);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 				return;
 			}
