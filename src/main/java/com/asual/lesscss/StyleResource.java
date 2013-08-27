@@ -32,15 +32,19 @@ import org.mozilla.javascript.tools.shell.Global;
 public class StyleResource extends Resource {
 
 	protected boolean compress;
-	
-	public StyleResource(ServletContext servletContext, String uri, String charset, boolean cache, boolean compress) throws ResourceNotFoundException {
+
+	public StyleResource(ServletContext servletContext, String uri,
+			String charset, boolean cache, boolean compress)
+			throws ResourceNotFoundException {
 		super(servletContext, uri, charset, cache);
 		this.compress = compress;
 	}
 
 	public byte[] getContent(String path) throws IOException {
 		if (content == null || (!cache && lastModified < getLastModified())) {
-			content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
+			content = resource instanceof URL ? ResourceUtils.readTextUrl(
+					(URL) resource, charset) : ResourceUtils.readTextFile(
+					(File) resource, charset);
 			lastModified = getLastModified();
 			if (compress) {
 				compress();
@@ -48,22 +52,25 @@ public class StyleResource extends Resource {
 		}
 		return content;
 	}
-	
+
 	protected void compress() throws IOException {
-		URL cssmin = getClass().getClassLoader().getResource("META-INF/cssmin.js");
+		URL cssmin = getClass().getClassLoader().getResource(
+				"META-INF/cssmin.js");
 		Context cx = Context.enter();
 		cx.setOptimizationLevel(9);
 		Global global = new Global();
 		global.init(cx);
 		Scriptable scope = cx.initStandardObjects(global);
 		cx.evaluateString(scope, "var exports = {};", "exports", 1, null);
-		cx.evaluateReader(scope, new InputStreamReader(cssmin.openConnection().getInputStream()), cssmin.getFile(), 1, null);
+		cx.evaluateReader(scope, new InputStreamReader(cssmin.openConnection()
+				.getInputStream()), cssmin.getFile(), 1, null);
 		Scriptable exports = (Scriptable) scope.get("exports", scope);
 		Scriptable compressor = (Scriptable) exports.get("compressor", exports);
 		Function fn = (Function) compressor.get("cssmin", compressor);
-		content = ((String) Context.call(null, fn, compressor, compressor, new Object[] {
-				new String(content, charset).replaceFirst("^/\\*", "/*!")})).getBytes(charset);
+		content = ((String) Context.call(null, fn, compressor, compressor,
+				new Object[] { new String(content, charset).replaceFirst(
+						"^/\\*", "/*!") })).getBytes(charset);
 		Context.exit();
 	}
-	
+
 }

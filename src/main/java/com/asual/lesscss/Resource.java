@@ -39,7 +39,8 @@ public class Resource {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	public Resource(ServletContext servletContext, String uri, String charset, boolean cache) throws ResourceNotFoundException {
+	public Resource(ServletContext servletContext, String uri, String charset,
+			boolean cache) throws ResourceNotFoundException {
 
 		this.servletContext = servletContext;
 		this.charset = charset;
@@ -47,19 +48,21 @@ public class Resource {
 
 		URL url = getUrl(uri);
 		File file = getFile(uri);
-		
+
 		if (url != null || (file != null && file.exists())) {
 			path = url != null ? url.getPath() : file.getAbsolutePath();
 			resource = url != null ? url : file;
 		} else {
 			logger.error("Error processing " + uri + ".");
-			throw new ResourceNotFoundException("Error processing " + uri + ".");			
+			throw new ResourceNotFoundException("Error processing " + uri + ".");
 		}
 	}
-	
+
 	public byte[] getContent() throws Exception {
 		if (content == null || (!cache && lastModified < getLastModified())) {
-			content = resource instanceof URL ? ResourceUtils.readBinaryUrl((URL) resource) : ResourceUtils.readBinaryFile((File) resource);
+			content = resource instanceof URL ? ResourceUtils
+					.readBinaryUrl((URL) resource) : ResourceUtils
+					.readBinaryFile((File) resource);
 			lastModified = getLastModified();
 		}
 		return content;
@@ -68,18 +71,20 @@ public class Resource {
 	public long getLastModified() throws IOException {
 		if (lastModified == null || !cache) {
 			if (resource instanceof URL) {
-				lastModified = ((URL) resource).openConnection().getLastModified();
-				logger.debug("getLastModified(), URL resource: " + lastModified + " - for resource: " + resource);
-			}
-			else {
+				lastModified = ((URL) resource).openConnection()
+						.getLastModified();
+				logger.debug("getLastModified(), URL resource: " + lastModified
+						+ " - for resource: " + resource);
+			} else {
 				lastModified = ((File) resource).lastModified();
-				logger.debug("getLastModified(), File resource: " + lastModified + " - for resource: " + resource);
+				logger.debug("getLastModified(), File resource: "
+						+ lastModified + " - for resource: " + resource);
 			}
 		}
 		logger.debug("getLastModified(): " + lastModified);
 		return lastModified;
 	}
-	
+
 	protected URL getUrl(String path) {
 		try {
 			URL url = servletContext.getResource("/META-INF" + path);
@@ -94,7 +99,8 @@ public class Resource {
 			if (url != null) {
 				return url;
 			}
-			url = getClass().getClassLoader().getResource("META-INF/resources" + path);
+			url = getClass().getClassLoader().getResource(
+					"META-INF/resources" + path);
 			if (url != null) {
 				return url;
 			}
@@ -102,7 +108,7 @@ public class Resource {
 		}
 		return null;
 	}
-	
+
 	protected File getFile(String path) {
 		try {
 			return new File(servletContext.getRealPath(path));

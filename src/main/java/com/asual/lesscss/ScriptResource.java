@@ -39,17 +39,22 @@ import com.google.javascript.jscomp.Result;
  * @author Rostislav Hristov
  */
 public class ScriptResource extends Resource {
-	
+
 	protected boolean compress;
 
-	public ScriptResource(ServletContext servletContext, String uri, String charset, boolean cache, boolean compress) throws ResourceNotFoundException {
+	public ScriptResource(ServletContext servletContext, String uri,
+			String charset, boolean cache, boolean compress)
+			throws ResourceNotFoundException {
 		super(servletContext, uri, charset, cache);
 		this.compress = compress;
 	}
 
 	public byte[] getContent() throws IOException {
-		if (content == null || (content != null && !cache && lastModified < getLastModified())) {
-			content = resource instanceof URL ? ResourceUtils.readTextUrl((URL) resource, charset) : ResourceUtils.readTextFile((File) resource, charset);
+		if (content == null
+				|| (content != null && !cache && lastModified < getLastModified())) {
+			content = resource instanceof URL ? ResourceUtils.readTextUrl(
+					(URL) resource, charset) : ResourceUtils.readTextFile(
+					(File) resource, charset);
 			lastModified = getLastModified();
 			if (compress) {
 				compress();
@@ -57,20 +62,23 @@ public class ScriptResource extends Resource {
 		}
 		return content;
 	}
-	
+
 	private void compress() throws UnsupportedEncodingException, IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		InputStream is = new ByteArrayInputStream(content);
 		Writer out = new OutputStreamWriter(baos, charset);
 		CompilerOptions options = new CompilerOptions();
-		CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
+		CompilationLevel.SIMPLE_OPTIMIZATIONS
+				.setOptionsForCompilationLevel(options);
 		Compiler.setLoggingLevel(Level.OFF);
 		Compiler compiler = new Compiler();
 		compiler.disableThreads();
-		Result result = compiler.compile(new JSSourceFile[] {}, 
-			new JSSourceFile[] { JSSourceFile.fromInputStream("is", is) }, options);
+		Result result = compiler.compile(new JSSourceFile[] {},
+				new JSSourceFile[] { JSSourceFile.fromInputStream("is", is) },
+				options);
 		if (result.success) {
-			Pattern pattern = Pattern.compile("^/\\*.*?\\*/\\s?", Pattern.DOTALL);
+			Pattern pattern = Pattern.compile("^/\\*.*?\\*/\\s?",
+					Pattern.DOTALL);
 			Matcher matcher = pattern.matcher(new String(content, charset));
 			while (matcher.find()) {
 				out.write(matcher.group());

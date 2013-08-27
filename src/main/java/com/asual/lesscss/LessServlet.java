@@ -29,7 +29,7 @@ public class LessServlet extends ResourceServlet {
 
 	protected LessEngine engine;
 	protected boolean css = false;
-	
+
 	public void init() {
 		if (getServletConfig() != null) {
 			if (getInitParameter("charset") != null) {
@@ -75,7 +75,8 @@ public class LessServlet extends ResourceServlet {
 		if (!resources.containsKey(uri)) {
 			logger.debug("Using new LessResource for uri " + uri);
 			if ("text/css".equals(mimeType)) {
-				resources.put(uri, new LessResource(engine, getServletContext(), uri, charset, cache, compress));
+				resources.put(uri, new LessResource(engine,
+						getServletContext(), uri, charset, cache, compress));
 				return resources.get(uri);
 			} else {
 				return super.getResource(uri);

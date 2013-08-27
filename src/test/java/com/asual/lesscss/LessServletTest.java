@@ -27,19 +27,20 @@ import org.junit.Test;
 /**
  * @author Rostislav Hristov
  */
-public class LessServletTest  {
+public class LessServletTest {
 
 	private static ServletTester tester;
- 
+
 	@BeforeClass
 	public static void before() throws Exception {
 		tester = new ServletTester();
 		tester.setClassLoader(LessServletTest.class.getClassLoader());
 		tester.setContextPath("/");
-		tester.addServlet(LessServlet.class, "*.css").setInitParameter("css", "true");
+		tester.addServlet(LessServlet.class, "*.css").setInitParameter("css",
+				"true");
 		tester.start();
 	}
-  
+
 	@Test
 	public void css() throws IOException, Exception {
 		HttpTester request = new HttpTester();
@@ -51,10 +52,10 @@ public class LessServletTest  {
 		response.parse(tester.getResponses(request.generate()));
 		assertEquals("body{color:#f0f0f0}", response.getContent());
 	}
-	
+
 	@AfterClass
 	public static void after() throws Exception {
 		tester.stop();
 	}
-	
+
 }
