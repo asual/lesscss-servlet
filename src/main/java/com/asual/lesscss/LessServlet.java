@@ -75,6 +75,7 @@ public class LessServlet extends ResourceServlet {
 		options.setCharset(charset);
 		options.setCss(css);
 		options.setLineNumbers(lineNumbers);
+		options.setOptimization(cache ? 3 : 0);
 		engine = new LessEngine(options);
 	}
 
