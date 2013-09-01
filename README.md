@@ -36,8 +36,3 @@ in the web.xml descriptor file.
         <servlet-name>resource</servlet-name>
         <url-pattern>/resources/js/*</url-pattern>
     </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>resource</servlet-name>
-        <url-pattern>*.jpg</url-pattern>
-    </servlet-mapping>
