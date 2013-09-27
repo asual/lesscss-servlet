@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.asual.lesscss</groupId>
 	<artifactId>lesscss-servlet</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
+	<version>1.4.2</version>
 	<packaging>jar</packaging>
 	<name>LESS Servlet</name>
 	<description>A Servlet wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
@@ -23,7 +22,7 @@
 		<url>http://github.com/asual/lesscss-servlet</url>
 		<connection>scm:git:git://github.com:asual/lesscss-servlet.git</connection>
 		<developerConnection>scm:git:git@github.com:asual/lesscss-servlet.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>lesscss-servlet-1.4.2</tag>
 	</scm>
 
 	<developers>
@@ -59,7 +58,7 @@
 		<dependency>
 			<groupId>com.asual.lesscss</groupId>
 			<artifactId>lesscss-engine</artifactId>
-			<version>1.4.2-SNAPSHOT</version>
+			<version>1.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
