@@ -45,7 +45,7 @@ public class ResourcePackage {
 	private static int DEFLATE = 32;
 	private static String ENCODING = "UTF-8";
 	private static String NEW_LINE = "\n";
-	private static String SEPARATOR = "-";
+	private static char SEPARATOR = '-';
 
 	private String[] resources;
 	private String version;
@@ -73,14 +73,28 @@ public class ResourcePackage {
 				if (extension != null && !extensions.contains(extension)) {
 					return null;
 				}
-				String[] parts = path.replaceFirst("^/", "").split(SEPARATOR);
+				int dashLastIdx = path.lastIndexOf(SEPARATOR);
+				String name = path;
+				String version = "";
+				if(dashLastIdx > -1){
+					name = path.substring(0, dashLastIdx).replaceFirst("^/", "");
+					if(name.lastIndexOf(SEPARATOR) != -1){
+						dashLastIdx = name.lastIndexOf(SEPARATOR);
+						version = name.substring(dashLastIdx+1);
+						name = name.substring(0, dashLastIdx);
+					}
+					else{
+						version = path.substring(dashLastIdx+1);
+					}
+				}
 				if (cache.containsValue(source)) {
 					key = getKeyFromValue(cache, source);
 				} else {
-					key = parts[parts.length - 1];
+					key = name;
 					byte[] bytes = null;
 					try {
 						bytes = Base64.decodeBase64(key.getBytes(ENCODING));
+						logger.info("Inflating: "+source);
 						bytes = inflate(bytes);
 					} catch (Exception e) {
 					}
@@ -91,10 +105,10 @@ public class ResourcePackage {
 						(String[]) ArrayUtils.subarray(data, 1, data.length));
 				int mask = Integer.valueOf(data[0]);
 				if ((mask & NAME_FLAG) != 0) {
-					rp.setName(parts[0]);
+					rp.setName(name);
 				}
 				if ((mask & VERSION_FLAG) != 0) {
-					rp.setVersion(parts[rp.getName() != null ? 1 : 0]);
+					rp.setVersion(rp.getName() != null ? version : name);
 				}
 				rp.setExtension(extension);
 				return rp;
