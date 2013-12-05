@@ -53,4 +53,20 @@ public class ResourcePackageTest {
 		assertArrayEquals(resources, rp.getResources());
 		assertEquals(version, rp.getVersion());
 	}
+	
+	@Test
+	public void js2() {
+		String name = "jquery.caret-range";
+		String version = "1.0";
+		String[] resources = new String[] {"/js/jquery.caret-range-1.0.js" };
+		
+		ResourcePackage rp = new ResourcePackage(resources);
+		rp.setName(name);
+		rp.setVersion(version);
+		rp.setExtension("js");
+		rp = ResourcePackage.fromString(rp.toString());
+		assertEquals(name, rp.getName());
+		assertArrayEquals(resources, rp.getResources());
+		assertEquals(version, rp.getVersion());
+	}
 }
