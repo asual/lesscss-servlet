@@ -58,19 +58,19 @@ public class ResourceServlet extends HttpServlet {
 		mimeTypes.put("jpg", "image/jpeg");
 		mimeTypes.put("png", "image/png");
 		mimeTypes.put("svg", "image/svg+xml");
-
+		
 		mimeTypes.put("oga", "audio/ogg");
 		mimeTypes.put("ogg", "audio/ogg");
 		mimeTypes.put("ogv", "video/ogg");
 		mimeTypes.put("mp4", "video/mp4");
 		mimeTypes.put("webm", "video/webm");
-
+		
 		mimeTypes.put("ttf", "font/truetype");
 		mimeTypes.put("otf", "font/opentype");
 		mimeTypes.put("eot", "application/vnd.ms-fontobject");
 		mimeTypes.put("woff", "application/x-font-woff");
 	}
-
+	
 	public void init() {
 		if (getServletConfig() != null) {
 			if (getInitParameter("charset") != null) {
@@ -100,7 +100,7 @@ public class ResourceServlet extends HttpServlet {
 			}
 		}
 	}
-
+	
 	protected Object getJndiParameter(String name) {
 		try {
 			return initialContext.lookup("java:comp/env" + name);
@@ -113,44 +113,39 @@ public class ResourceServlet extends HttpServlet {
 		String mimeType = getResourceMimeType(uri);
 		if (!resources.containsKey(uri)) {
 			if ("text/css".equals(mimeType)) {
-				resources.put(uri, new StyleResource(getServletContext(), uri,
-						charset, cache, compress));
+				resources.put(uri, new StyleResource(getServletContext(), uri, charset, cache, compress));
 			} else if ("text/javascript".equals(mimeType)) {
-				resources.put(uri, new ScriptResource(getServletContext(), uri,
-						charset, cache, compress));
+				resources.put(uri, new ScriptResource(getServletContext(), uri, charset, cache, compress));
 			} else {
-				resources.put(uri, new Resource(getServletContext(), uri,
-						charset, cache));
+				resources.put(uri, new Resource(getServletContext(), uri, charset, cache));
 			}
 		}
 		return resources.get(uri);
 	}
-
+	
 	protected byte[] getResourceContent(String uri) throws Exception {
 		Resource resource = getResource(uri);
 		return resource.getContent();
 	}
-
-	protected long getResourceLastModified(String uri) throws IOException {
+	
+	protected long getResourceLastModified(String uri) throws IOException {		
 		Resource resource = getResource(uri);
 		return resource.getLastModified();
 	}
-
+	
 	protected String getResourceMimeType(String uri) {
 		String extension = uri.substring(uri.lastIndexOf(".") + 1);
-		String mimeType = mimeTypes.containsKey(extension) ? mimeTypes
-				.get(extension) : getServletContext().getMimeType(uri);
+		String mimeType = mimeTypes.containsKey(extension) ? mimeTypes.get(extension) : getServletContext().getMimeType(uri);
 		return mimeType != null ? mimeType : "application/octet-stream";
 	}
-
-	protected byte[] mergeContent(byte[] c1, byte[] c2)
-			throws UnsupportedEncodingException {
+	
+	protected byte[] mergeContent(byte[] c1, byte[] c2) throws UnsupportedEncodingException {
 		byte[] line = "\n".getBytes(charset);
 		int l1 = c1.length;
 		int l2 = l1 != 0 ? line.length : 0;
 		int l3 = c2.length;
 		byte[] result = new byte[l1 + l2 + l3];
-
+		
 		for (int i = 0; i < l1; i++) {
 			result[i] = c1[i];
 		}
@@ -163,57 +158,41 @@ public class ResourceServlet extends HttpServlet {
 		return result;
 	}
 
-	public void service(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException {
+	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 		try {
-			ResourcePackage rp = ResourcePackage.fromString(request
-					.getPathInfo());
-			String[] uri = (rp != null) ? rp.getResources()
-					: new String[] { (request.getContextPath()
-							+ request.getServletPath() + (request.getPathInfo() == null ? ""
-							: request.getPathInfo())) };
+			ResourcePackage rp = ResourcePackage.fromString(request.getPathInfo());
+			String[] uri = (rp != null) ? rp.getResources() : new String[] {request.getRequestURI().replaceAll("/+", "/")};
 			String mimeType = getResourceMimeType(uri[0]);
 			long lastModified = 0;
 			byte[] content = new byte[0];
 			for (String resource : uri) {
-				resource = resource.replaceAll("^" + request.getContextPath(),
-						"");
+				resource = resource.replaceAll("^" + request.getContextPath(), "");
 				try {
-					content = mergeContent(content,
-							getResourceContent(resource));
+					content = mergeContent(content, getResourceContent(resource));  
+					lastModified = Math.max(lastModified, getResourceLastModified(resource));
 				} catch (IOException e) {
 					logger.error("Cannot find " + resource + ".");
-					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-					return;
 				}
-				lastModified = Math.max(lastModified,
-						getResourceLastModified(resource));
 			}
 			long ifModifiedSince = request.getDateHeader("If-Modified-Since");
-			if (ifModifiedSince != 0
-					&& ifModifiedSince / milliseconds == lastModified
-							/ milliseconds) {
-				logger.debug("Return with SC_NOT_MODIFIED, since "
-						+ ifModifiedSince + " == " + lastModified);
-				response.setHeader("Cache-control", "max-age=" + maxAge);
+			if (ifModifiedSince != 0 && ifModifiedSince/milliseconds == lastModified/milliseconds) {
+				logger.debug("Return with SC_NOT_MODIFIED, since " + ifModifiedSince + " == " + lastModified);
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 				return;
 			}
 			if (cache) {
 				maxAge = 0;
 			}
-			response.setContentType(mimeType
-					+ (mimeType.startsWith("text/") ? ";charset=" + charset
-							: ""));
+			response.setContentType(mimeType + (mimeType.startsWith("text/") ? ";charset=" + charset : ""));
 			response.setDateHeader("Last-Modified", lastModified);
-			response.setDateHeader("Expires", System.currentTimeMillis()
-					+ maxAge * milliseconds);
+			response.setDateHeader("Expires", System.currentTimeMillis() + maxAge*milliseconds);
 			response.setHeader("Cache-control", "max-age=" + maxAge);
 			response.setContentLength(content.length);
 			response.getOutputStream().write(content);
 			response.getOutputStream().flush();
 			response.getOutputStream().close();
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			throw new ServletException(e.getMessage(), e);
 		}
 	}

@@ -28,9 +28,8 @@ public class LessServlet extends ResourceServlet {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	protected LessEngine engine;
-	protected boolean css;
-	protected String lineNumbers;
-
+	protected boolean css = false;
+	
 	public void init() {
 		if (getServletConfig() != null) {
 			if (getInitParameter("charset") != null) {
@@ -44,9 +43,6 @@ public class LessServlet extends ResourceServlet {
 			}
 			if (getInitParameter("css") != null) {
 				css = Boolean.valueOf(getInitParameter("css"));
-			}
-			if (getInitParameter("lineNumbers") != null) {
-				lineNumbers = getInitParameter("lineNumbers");
 			}
 		}
 		try {
@@ -67,15 +63,10 @@ public class LessServlet extends ResourceServlet {
 			if (getJndiParameter("/less/Css") != null) {
 				css = (Boolean) getJndiParameter("/less/Css");
 			}
-			if (getJndiParameter("/less/LineNumbers") != null) {
-				lineNumbers = (String) getJndiParameter("/less/LineNumbers");
-			}
 		}
 		LessOptions options = new LessOptions();
 		options.setCharset(charset);
 		options.setCss(css);
-		options.setLineNumbers(lineNumbers);
-		options.setOptimization(cache ? 3 : 0);
 		engine = new LessEngine(options);
 	}
 
@@ -84,8 +75,7 @@ public class LessServlet extends ResourceServlet {
 		if (!resources.containsKey(uri)) {
 			logger.debug("Using new LessResource for uri " + uri);
 			if ("text/css".equals(mimeType)) {
-				resources.put(uri, new LessResource(engine,
-						getServletContext(), uri, charset, cache, compress));
+				resources.put(uri, new LessResource(engine, getServletContext(), uri, charset, cache, compress));
 				return resources.get(uri);
 			} else {
 				return super.getResource(uri);

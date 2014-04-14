@@ -34,30 +34,29 @@ import org.apache.commons.logging.LogFactory;
  * @author Rostislav Hristov
  */
 public class ResourcePackage {
-
+	
 	private final static Map<String, String> cache = new ConcurrentHashMap<String, String>();
 	private final static Log logger = LogFactory.getLog(ResourcePackage.class);
-	private final static List<String> extensions = Arrays.asList("css", "less",
-			"js");
-
+	private final static List<String> extensions = Arrays.asList("css", "less", "js");
+	
 	private static int NAME_FLAG = 1;
 	private static int VERSION_FLAG = 2;
 	private static int DEFLATE = 32;
 	private static String ENCODING = "UTF-8";
 	private static String NEW_LINE = "\n";
 	private static char SEPARATOR = '-';
-
+	
 	private String[] resources;
 	private String version;
 	private String name;
 	private String extension;
-
+	
 	public ResourcePackage(String[] resources) {
 		this.resources = resources;
 	}
-
+	
 	public static ResourcePackage fromString(String source) {
-		if (!StringUtils.isEmpty(source)) {
+		if (!StringUtils.isEmpty(source) && !source.equals("/")) {
 			try {
 				String key;
 				String path = null;
@@ -97,12 +96,12 @@ public class ResourcePackage {
 						logger.info("Inflating: "+source);
 						bytes = inflate(bytes);
 					} catch (Exception e) {
+						logger.debug(e.getMessage(), e);
 					}
 					key = new String(bytes, ENCODING);
 				}
 				String[] data = key.split(NEW_LINE);
-				ResourcePackage rp = new ResourcePackage(
-						(String[]) ArrayUtils.subarray(data, 1, data.length));
+				ResourcePackage rp = new ResourcePackage((String[]) ArrayUtils.subarray(data, 1, data.length));
 				int mask = Integer.valueOf(data[0]);
 				if ((mask & NAME_FLAG) != 0) {
 					rp.setName(name);
@@ -113,11 +112,13 @@ public class ResourcePackage {
 				rp.setExtension(extension);
 				return rp;
 			} catch (Exception e) {
+				logger.debug(e.getMessage(), e);
 			}
 		}
 		return null;
 	}
-
+	
+	@Override
 	public String toString() {
 		try {
 			if (extension != null && !extensions.contains(extension)) {
@@ -130,17 +131,14 @@ public class ResourcePackage {
 			if (version != null) {
 				mask = mask | VERSION_FLAG;
 			}
-			String key = mask + NEW_LINE
-					+ StringUtils.join(resources, NEW_LINE);
+			String key = mask + NEW_LINE + StringUtils.join(resources, NEW_LINE);
 			if (!cache.containsKey(key)) {
 				byte[] bytes = key.getBytes(ENCODING);
 				StringBuilder sb = new StringBuilder();
 				sb.append("/");
 				sb.append(name == null ? "" : name + SEPARATOR);
 				sb.append(version == null ? "" : version + SEPARATOR);
-				sb.append(Base64.encodeBase64URLSafeString(
-						bytes.length < DEFLATE ? bytes : deflate(bytes))
-						.replaceAll("-", "+"));
+				sb.append(Base64.encodeBase64URLSafeString(bytes.length < DEFLATE ? bytes : deflate(bytes)).replaceAll("-", "+"));
 				sb.append(extension == null ? "" : "." + extension);
 				cache.put(key, sb.toString());
 			}
@@ -166,7 +164,7 @@ public class ResourcePackage {
 	public void setExtension(String extension) {
 		this.extension = extension;
 	}
-
+	
 	public String getVersion() {
 		return version;
 	}
@@ -174,20 +172,20 @@ public class ResourcePackage {
 	public void setVersion(String version) {
 		this.version = version;
 	}
-
+	
 	public String[] getResources() {
 		return resources;
 	}
-
-	public static <K, V> K getKeyFromValue(Map<K, V> m, V value) {
-		for (K o : m.keySet()) {
+	
+	public static <K,V> K getKeyFromValue(Map<K,V> m, V value) {
+		for (K o : m.keySet()){
 			if (m.get(o).equals(value)) {
 				return o;
 			}
 		}
 		return null;
 	}
-
+	
 	private static byte[] deflate(byte[] input) throws IOException {
 		Deflater deflater = new Deflater();
 		deflater.setLevel(Deflater.BEST_COMPRESSION);
@@ -202,9 +200,8 @@ public class ResourcePackage {
 		baos.close();
 		return baos.toByteArray();
 	}
-
-	private static byte[] inflate(byte[] output) throws DataFormatException,
-			IOException {
+	
+	private static byte[] inflate(byte[] output) throws DataFormatException, IOException {
 		Inflater inflater = new Inflater();
 		inflater.setInput(output);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(output.length);

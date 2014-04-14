@@ -25,20 +25,20 @@ import org.junit.Test;
 /**
  * @author Rostislav Hristov
  */
-public class ResourceServletTest {
+public class ResourceServletTest  {
 
 	private static ServletTester tester;
-
+ 
 	@BeforeClass
 	public static void before() throws Exception {
 		tester = new ServletTester();
 		tester.setClassLoader(ResourceServletTest.class.getClassLoader());
 		tester.setContextPath("/");
-		tester.addServlet(ResourceServlet.class, "/*").setInitParameter(
-				"compress", "true");
+		tester.addServlet(ResourceServlet.class, "/*")
+			.setInitParameter("compress", "true");
 		tester.start();
 	}
-
+  
 	@Test
 	public void img() throws Exception {
 		HttpTester request = new HttpTester();
@@ -49,15 +49,12 @@ public class ResourceServletTest {
 		HttpTester response = new HttpTester();
 		response.parse(tester.getResponses(request.generate()));
 		assertEquals("image/png", response.getContentType());
-		assertEquals(
-				13831,
-				response.getContent().getBytes(response.getCharacterEncoding()).length);
+		assertEquals(13831, response.getContent().getBytes(response.getCharacterEncoding()).length);
 	}
-
+	
 	@Test
 	public void js() throws Exception {
-		ResourcePackage rp = new ResourcePackage(new String[] { "/js/test1.js",
-				"/js/test2.js" });
+		ResourcePackage rp = new ResourcePackage(new String[] {"/js/test1.js", "/js/test2.js"});
 		HttpTester request = new HttpTester();
 		request.setMethod("GET");
 		request.setHeader("Host", "tester");
@@ -74,15 +71,12 @@ public class ResourceServletTest {
 		sb.append(" * License and copyright 2\n");
 		sb.append(" */\n");
 		sb.append("var test2=2;");
-		assertEquals(
-				sb.toString(),
-				response.getContent().replaceAll(
-						System.getProperty("line.separator"), "\n"));
+		assertEquals(sb.toString(), response.getContent().replaceAll(System.getProperty("line.separator"), "\n"));
 	}
-
+	
 	@AfterClass
 	public static void after() throws Exception {
 		tester.stop();
 	}
-
+	
 }

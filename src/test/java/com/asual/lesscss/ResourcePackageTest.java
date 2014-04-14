@@ -24,25 +24,22 @@ import org.junit.Test;
 /**
  * @author Rostislav Hristov
  */
-public class ResourcePackageTest {
-
+public class ResourcePackageTest  {
+	
 	@Test
 	public void css() throws IOException, Exception {
-		ResourcePackage rp = new ResourcePackage(new String[] {
-				"/css/test1.css", "/css/test2.css" });
+		ResourcePackage rp = new ResourcePackage(new String[] {"/css/test1.css", "/css/test2.css"});
 		rp.setName("package");
 		rp.setVersion("1.0.0");
 		rp.setExtension("css");
-		assertEquals(
-				"/package-1.0.0-MwovY3NzL3Rlc3QxLmNzcwovY3NzL3Rlc3QyLmNzcw.css",
-				rp.toString());
+		assertEquals("/package-1.0.0-MwovY3NzL3Rlc3QxLmNzcwovY3NzL3Rlc3QyLmNzcw.css", rp.toString());
 	}
-
+	
 	@Test
 	public void js() throws Exception {
 		String name = "test";
-		String[] resources = new String[] { "/js/test1.js", "/js/test2.js",
-				"/js/test3.js", "/js/test4.js", "/js/test5.js" };
+		String[] resources = new String[] {
+				"/js/test1.js", "/js/test2.js", "/js/test3.js", "/js/test4.js", "/js/test5.js"};
 		String version = "1.0.0";
 		ResourcePackage rp = new ResourcePackage(resources);
 		rp.setName(name);
@@ -52,6 +49,14 @@ public class ResourcePackageTest {
 		assertEquals(name, rp.getName());
 		assertArrayEquals(resources, rp.getResources());
 		assertEquals(version, rp.getVersion());
+		/*
+		rp = new ResourcePackage(resources);
+		rp.setVersion(version);
+		rp.setExtension("js");
+		rp = ResourcePackage.fromString(rp.toString());
+		assertEquals(null, rp.getName());
+		assertEquals(version, rp.getVersion());
+		*/
 	}
 	
 	@Test
