@@ -85,9 +85,6 @@ public class LessResource extends StyleResource {
 			}
 
 			while (m.find()) {
-				logger.debug("Path: " + this.path);
-				logger.debug("OriginalUri: " + this.originalUri);
-				logger.debug("ImportResource URI: " + folder + m.group(1).replaceAll("\"|'", ""));
 				LessResource importedResource = new LessResource(
 						this.engine
 						, this.servletContext
