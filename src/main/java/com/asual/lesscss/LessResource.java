@@ -20,6 +20,8 @@ import org.apache.commons.logging.LogFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
@@ -30,16 +32,18 @@ public class LessResource extends StyleResource {
 
 	private final Log logger = LogFactory.getLog(getClass());
 	private LessEngine engine;
+	private String originalUri;
 
 	public LessResource(LessEngine engine, ServletContext servletContext,
 			String uri, String charset, boolean cache, boolean compress)
 			throws ResourceNotFoundException {
 		super(servletContext, uri, charset, cache, compress);
+		this.originalUri = uri;
 		this.engine = engine;
 	}
 
 	public byte[] getContent() throws LessException, IOException {
-		if (content == null || !cache) {
+		if (content == null || (!cache && lastModified < getLastModified())) {
 			logger.debug("Not using cache.");
 			if (engine != null) {
 				logger.debug("LessEngine available, compiling.");
@@ -53,7 +57,7 @@ public class LessResource extends StyleResource {
 						(URL) resource, charset) : ResourceUtils.readTextFile(
 						(File) resource, charset);
 			}
-			lastModified = super.getLastModified();
+			lastModified = getLastModified();
 			if (compress) {
 				logger.debug("Compressing resource.");
 				compress();
@@ -63,6 +67,40 @@ public class LessResource extends StyleResource {
 					+ " and getLastModified: " + getLastModified());
 		}
 		return content;
+	}
+
+	public long getLastModified() throws IOException {
+		if (lastModified == null || !cache) {
+			lastModified = super.getLastModified();
+			String content = new String(
+				resource instanceof URL
+					? ResourceUtils.readTextUrl((URL) resource, charset)
+					: ResourceUtils.readTextFile((File) resource, charset)
+			);
+			Pattern p = Pattern.compile("@import\\s+(\"[^\"]*\"|'[^']*')");
+			Matcher m = p.matcher(content);
+			String folder = this.originalUri.substring(0, this.originalUri.lastIndexOf("/") + 1);
+			if(folder == null || folder == ""){
+				folder = this.originalUri.substring(0, this.originalUri.lastIndexOf("\\") + 1);
+			}
+
+			while (m.find()) {
+				LessResource importedResource = new LessResource(
+						this.engine
+						, this.servletContext
+						, folder + m.group(1).replaceAll("\"|'", "")
+						, this.charset
+						, this.cache
+						, this.compress
+				);
+				long importedResourceLastModified = importedResource.getLastModified();
+				if (importedResourceLastModified > lastModified) {
+					lastModified = importedResourceLastModified;
+				}
+			}
+		}
+		logger.debug("getLastModified() in LessResource: " + lastModified);
+		return lastModified;
 	}
 
 }
